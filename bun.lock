@@ -21,6 +21,10 @@
         "@farish/sdk": "workspace:*",
       },
     },
+    "lib/api-contract": {
+      "name": "@farish/api-contract",
+      "version": "0.0.0",
+    },
     "lib/core": {
       "name": "@farish/core",
       "version": "0.0.0",
@@ -28,6 +32,13 @@
     "lib/math": {
       "name": "@farish/math",
       "version": "0.0.0",
+    },
+    "lib/mock-data": {
+      "name": "@farish/mock-data",
+      "version": "0.0.0",
+      "dependencies": {
+        "@farish/api-contract": "workspace:*",
+      },
     },
     "packages/sdk": {
       "name": "@farish/sdk",
@@ -70,6 +81,8 @@
 
     "@emnapi/wasi-threads": ["@emnapi/wasi-threads@1.2.1", "", { "dependencies": { "tslib": "^2.4.0" } }, "sha512-uTII7OYF+/Mes/MrcIOYp5yOtSMLBWSIoLPpcgwipoiKbli6k322tcoFsxoIIxPDqW01SQGAgko4EzZi2BNv2w=="],
 
+    "@farish/api-contract": ["@farish/api-contract@workspace:lib/api-contract"],
+
     "@farish/cli": ["@farish/cli@workspace:apps/cli"],
 
     "@farish/core": ["@farish/core@workspace:lib/core"],
@@ -77,6 +90,8 @@
     "@farish/echo-service": ["@farish/echo-service@workspace:services/echo-service"],
 
     "@farish/math": ["@farish/math@workspace:lib/math"],
+
+    "@farish/mock-data": ["@farish/mock-data@workspace:lib/mock-data"],
 
     "@farish/sdk": ["@farish/sdk@workspace:packages/sdk"],
 
