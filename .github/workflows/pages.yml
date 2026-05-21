@@ -124,10 +124,13 @@ jobs:
         run: bun run --cwd apps/web playwright install --with-deps chromium
 
       # Build the app, then run the screenshot suite against the production
-      # build. The `e2e` package script chains `vite build` + `playwright test`
-      # — the SAME command a developer runs locally (step 24).
+      # build. `nx run web:e2e` respects the task graph: its `dependsOn: ["^build"]`
+      # ensures workspace lib dist/ artefacts (@farish/api-contract, @farish/mock-data)
+      # are built before `vite build` runs — critical on a cold CI runner where
+      # no dist/ exists yet. The underlying package script is still
+      # `vite build && playwright test`, so local and CI run the same code.
       - name: Build app + run screenshot suite
-        run: bun run --cwd apps/web e2e
+        run: nx run web:e2e
 
       # Copy the raw PNGs onto a date-based path: docs/screenshots/<date>-<run>/.
       # The script prints the run directory name; capture it for later steps.

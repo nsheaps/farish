@@ -10,6 +10,11 @@
     "format": { "executor": "nx:run-script", "options": { "script": "format" } },
     "test": { "executor": "nx:run-script", "options": { "script": "test" } },
     "build": { "executor": "nx:run-script", "options": { "script": "build" } },
-    "e2e": { "executor": "nx:run-script", "options": { "script": "e2e" } }
+    "e2e": {
+      "executor": "nx:run-script",
+      "options": { "script": "e2e" },
+      "//": "dependsOn ^build so workspace lib dist/ artefacts exist before vite build runs (cold CI has no pre-built dist/).",
+      "dependsOn": ["^build"]
+    }
   }
 }
