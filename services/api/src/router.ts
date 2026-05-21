@@ -7,24 +7,39 @@
  * production a route group could be split into its own deployable service
  * without changing any route module — only which routes a server mounts.
  *
- * The router also centralises three concerns every route needs: JSON
- * serialisation, CORS headers (the browser app runs on a different dev port),
- * and uncaught-error handling (a thrown handler becomes a 500 `internal_error`
- * instead of crashing the process).
+ * The router centralises five concerns every route needs:
+ * - JSON serialisation
+ * - CORS headers (the browser app runs on a different dev port)
+ * - Path-parameter extraction (`:param` segments in route patterns)
+ * - Auth-token extraction (shared by routes that require authentication)
+ * - Uncaught-error handling (a thrown handler becomes a 500 `internal_error`
+ *   instead of crashing the process)
  */
 import type { ApiError } from '@farish/api-contract';
 
 /** HTTP methods the router recognises. */
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
-/** A route handler: receives the request, returns any JSON-serialisable value. */
-export type RouteHandler = (req: Request) => unknown | Promise<unknown>;
+/**
+ * A route handler.
+ *
+ * Receives the request and the extracted path params. Returns any
+ * JSON-serialisable value or a `Response` directly (e.g. `noContent()`).
+ * Handlers may safely ignore either argument if they do not need it.
+ */
+export type RouteHandler = (
+  req: Request,
+  params: Record<string, string>,
+) => unknown | Promise<unknown>;
 
 /** A single mountable route. */
 export interface Route {
   /** HTTP method this route answers. */
   method: HttpMethod;
-  /** Exact path this route answers (no path params in the step-26 skeleton). */
+  /**
+   * URL path pattern. Supports `:param` segments, e.g. `/models/:id`.
+   * Exact paths (no `:` segments) are also valid.
+   */
   path: string;
   /** The handler producing the response payload. */
   handler: RouteHandler;
@@ -52,10 +67,59 @@ export function errorResponse(code: string, status: number): Response {
 }
 
 /**
+ * Return a `204 No Content` response with CORS headers.
+ *
+ * Used by fire-and-forget endpoints like `POST /models/:id/views`.
+ */
+export function noContent(): Response {
+  return new Response(null, { status: 204, headers: CORS_HEADERS });
+}
+
+/**
+ * Extract the bearer token from the `Authorization` header.
+ *
+ * Returns the raw token string when the header is present and starts with
+ * `Bearer `, or `null` otherwise. Does NOT validate the token — that is the
+ * route's responsibility.
+ */
+export function extractBearerToken(req: Request): string | null {
+  const auth = req.headers.get('authorization');
+  if (auth === null || !auth.startsWith('Bearer ')) return null;
+  const token = auth.slice(7).trim();
+  return token.length > 0 ? token : null;
+}
+
+/**
+ * Match a URL pathname against a route pattern.
+ *
+ * Converts `:param` segments to capture groups. Returns a `Record<string,
+ * string>` of captured values when the pathname matches, or `null` when it
+ * does not.
+ *
+ * @example
+ * matchPath('/models/:id', '/models/abc-123') // → { id: 'abc-123' }
+ * matchPath('/models/:id', '/models')         // → null
+ */
+function matchPath(pattern: string, pathname: string): Record<string, string> | null {
+  const keys: string[] = [];
+  const regexSrc = pattern.replace(/:([^/]+)/g, (_: string, key: string) => {
+    keys.push(key);
+    return '([^/]+)';
+  });
+  const m = pathname.match(new RegExp(`^${regexSrc}$`));
+  if (m === null) return null;
+  return Object.fromEntries(
+    keys.map((k, i) => [k, decodeURIComponent(m[i + 1] ?? '')] as [string, string]),
+  );
+}
+
+/**
  * Compose routes into a single `fetch` handler suitable for `Bun.serve`.
  *
- * Resolution order: CORS preflight → exact method+path match → 404.
+ * Resolution order: CORS preflight → method + path pattern match → 404.
  * A handler that throws is caught and returned as `500 internal_error`.
+ * A handler that returns a `Response` directly is forwarded as-is (e.g.
+ * `noContent()`, `errorResponse()`).
  */
 export function createRouter(routes: readonly Route[]): (req: Request) => Promise<Response> {
   return async (req: Request): Promise<Response> => {
@@ -65,14 +129,30 @@ export function createRouter(routes: readonly Route[]): (req: Request) => Promis
     }
 
     const { pathname } = new URL(req.url);
-    const route = routes.find((r) => r.method === req.method && r.path === pathname);
 
-    if (route === undefined) {
+    // Find the first route whose method and path pattern both match.
+    let matchedRoute: Route | undefined;
+    let matchedParams: Record<string, string> = {};
+
+    for (const route of routes) {
+      if (route.method !== req.method) continue;
+      const params = matchPath(route.path, pathname);
+      if (params !== null) {
+        matchedRoute = route;
+        matchedParams = params;
+        break;
+      }
+    }
+
+    if (matchedRoute === undefined) {
       return errorResponse('not_found', 404);
     }
 
     try {
-      const payload = await route.handler(req);
+      const payload = await matchedRoute.handler(req, matchedParams);
+      // If the handler already built a Response (e.g. noContent, errorResponse),
+      // pass it through without re-wrapping.
+      if (payload instanceof Response) return payload;
       return json(payload);
     } catch (cause) {
       // Surface the cause on the error channel; never crash the process.
