@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+#MISE description = "Install workspace dependencies (bun install)."
 # bootstrap.sh — install all workspace dependencies.
 #
 # Invoked by `mise run bootstrap`. Kept as a script (not a one-line mise task)

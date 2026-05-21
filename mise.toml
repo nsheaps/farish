@@ -34,10 +34,6 @@ not_found_auto_install = false
 # Each task is a thin wrapper over nx so the local DX command and the CI command
 # are identical. CI runs `mise run <task>`; so do you.
 
-[tasks.bootstrap]
-description = "Install workspace dependencies (bun install)."
-run = ".mise/tasks/bootstrap.sh"
-
 [tasks.lint]
 description = "Lint every package via the nx task graph."
 run = "nx run-many --target=lint --all"
@@ -53,10 +49,6 @@ run = "nx run-many --target=test --all"
 [tasks.build]
 description = "Build every package via the nx task graph (respects dependsOn)."
 run = "nx run-many --target=build --all"
-
-[tasks.check]
-description = "Full validation: lint + test + build (the CI gate)."
-run = ".mise/tasks/check.sh"
 
 [tasks.graph]
 description = "Print the nx project dependency graph as text."

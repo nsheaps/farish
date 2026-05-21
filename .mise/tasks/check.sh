@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+#MISE description = "Full validation: lint + test + build (the CI gate)."
 # check.sh — the full local validation gate (lint + test + build).
 #
 # Invoked by `mise run check`. This is the SAME sequence CI runs, so a green
