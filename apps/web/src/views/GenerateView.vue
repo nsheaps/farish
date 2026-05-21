@@ -2,48 +2,121 @@
 /**
  * GenerateView — the farish Generate page.
  *
- * Step 31: layout matched to the wireframe in docs/pages/generate/wireframes/page.ascii.md
+ * Step 32: populated with a full mock generation conversation so the page
+ * demonstrates the complete flow — prompt → spec-clarification Q&A → live
+ * agent-loop steps → 3D result — without requiring a real API key.
+ *
  * States: no-key | idle | specifying | generating | complete | error
+ * Demo mode: page loads in `complete` state with mock data pre-filled.
  *
  * Layout:
- * - No-key banner (VAlert warning) when no API key
+ * - Demo banner (info) when in demo mode
+ * - No-key banner (warning) when no key and not in demo mode
  * - Left: ParametersPanel sidebar (~280px)
- *   - Resolution (VSlider), Style (VSelect), Complexity (VSlider)
  * - Right: Generation Workspace
- *   - PromptBar (VTextarea + VBtn Generate)
- *   - Generation Stream + Model Preview (two-column split)
- *   - Result Actions (in `complete` state)
+ *   - PromptBar
+ *   - Clarification Q&A (shown in specifying + complete)
+ *   - Generation Stream + Model Preview (generating + complete)
+ *   - Result Actions (complete)
  *
  * Spec: docs/pages/generate/SPEC.md
  * Tag: browser-only — all AI calls originate from the client.
  */
 import { ref, computed } from 'vue';
+import { mockGenerationConversation } from '@farish/mock-data';
 
 type GenerateState = 'no-key' | 'idle' | 'specifying' | 'generating' | 'complete' | 'error';
 
-const state = ref<GenerateState>('no-key');
-const prompt = ref('');
+// ----- Mock conversation data (loaded once) --------------------------------
+const mockConvo = mockGenerationConversation(1);
+
+// ----- State ---------------------------------------------------------------
+/** Demo mode: page starts showing a complete mock generation. */
+const demoMode = ref(true);
+const state = ref<GenerateState>('complete');
+
+// Prompt bar
+const prompt = ref(mockConvo.promptText);
+
+// Parameters panel
 const resolution = ref(60);
 const complexity = ref(40);
-const style = ref('Realistic');
+const style = ref('Low-poly');
 const styleOptions = ['Realistic', 'Stylized', 'Low-poly', 'Abstract', 'Architectural'];
 
-const isPromptLocked = computed(() => state.value === 'specifying' || state.value === 'generating');
-const canGenerate = computed(() => state.value !== 'no-key' && prompt.value.trim().length > 0 && !isPromptLocked.value);
+// Clarification answers (pre-filled from mock)
+const clarificationAnswers = ref<Record<string, string>>(
+  Object.fromEntries(mockConvo.clarificationQuestions.map((q) => [q.id, q.mockAnswer])),
+);
+
+// ----- Computed ------------------------------------------------------------
+const isPromptLocked = computed(
+  () => state.value === 'specifying' || state.value === 'generating',
+);
+const canGenerate = computed(
+  () =>
+    state.value !== 'no-key' &&
+    prompt.value.trim().length > 0 &&
+    !isPromptLocked.value,
+);
+const showClarification = computed(
+  () => state.value === 'specifying' || state.value === 'complete',
+);
+const showStream = computed(
+  () => state.value === 'generating' || state.value === 'complete',
+);
+
+// ----- Actions -------------------------------------------------------------
+function exitDemo() {
+  demoMode.value = false;
+  state.value = 'no-key';
+  prompt.value = '';
+  clarificationAnswers.value = {};
+}
 </script>
 
 <template>
   <div data-testid="generate-view">
 
-    <!-- No Key Banner — shown in `no-key` state -->
+    <!-- Demo Mode Banner -->
     <v-alert
-      v-if="state === 'no-key'"
+      v-if="demoMode"
+      type="info"
+      variant="tonal"
+      class="mb-0 rounded-0"
+      data-testid="generate-demo-banner"
+    >
+      <span class="font-weight-medium">Demo mode</span> — this is a pre-built example showing the full generation flow.
+      <v-btn
+        variant="text"
+        size="small"
+        to="/settings"
+        class="ml-2 font-weight-bold"
+        data-testid="generate-demo-connect-link"
+      >
+        Connect your API key →
+      </v-btn>
+      <template #append>
+        <v-btn
+          icon="mdi-close"
+          variant="text"
+          density="compact"
+          aria-label="Exit demo mode"
+          data-testid="generate-demo-dismiss"
+          @click="exitDemo"
+        />
+      </template>
+    </v-alert>
+
+    <!-- No Key Banner — shown in `no-key` state when not in demo -->
+    <v-alert
+      v-else-if="state === 'no-key'"
       type="warning"
       variant="tonal"
       class="mb-0 rounded-0"
       data-testid="generate-no-key-banner"
     >
-      ⚠ No API key connected.
+      No API key connected.
       <RouterLink to="/settings?return=/generate" class="font-weight-bold ml-1">
         Connect your key →
       </RouterLink>
@@ -56,10 +129,10 @@ const canGenerate = computed(() => state.value !== 'no-key' && prompt.value.trim
       <v-sheet
         color="surface-variant"
         class="pa-4"
-        style="width: 280px; min-width: 280px; border-right: 1px solid rgba(0,0,0,0.12);"
+        style="width: 280px; min-width: 280px; border-right: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));"
         data-testid="generate-params-panel"
       >
-        <p class="text-overline text-medium-emphasis mb-4">PARAMETERS</p>
+        <p class="text-overline text-medium-emphasis mb-4">Parameters</p>
 
         <!-- Resolution -->
         <div class="mb-5">
@@ -67,7 +140,7 @@ const canGenerate = computed(() => state.value !== 'no-key' && prompt.value.trim
             <span>Resolution</span>
             <span class="text-caption text-medium-emphasis">{{ resolution }}%</span>
           </div>
-          <div class="d-flex align-center ga-1 text-caption text-medium-emphasis mb-1">
+          <div class="d-flex align-center text-caption text-medium-emphasis mb-1">
             <span>Low</span>
             <v-spacer />
             <span>High</span>
@@ -101,7 +174,7 @@ const canGenerate = computed(() => state.value !== 'no-key' && prompt.value.trim
             <span>Complexity</span>
             <span class="text-caption text-medium-emphasis">{{ complexity }}%</span>
           </div>
-          <div class="d-flex align-center ga-1 text-caption text-medium-emphasis mb-1">
+          <div class="d-flex align-center text-caption text-medium-emphasis mb-1">
             <span>Low</span>
             <v-spacer />
             <span>High</span>
@@ -116,6 +189,14 @@ const canGenerate = computed(() => state.value !== 'no-key' && prompt.value.trim
             density="compact"
           />
         </div>
+
+        <v-divider class="my-4" />
+
+        <!-- About demo params -->
+        <p class="text-caption text-medium-emphasis">
+          Parameters shown above were used for this demo generation.
+          Adjust them before clicking Generate on your own prompt.
+        </p>
       </v-sheet>
 
       <!-- Generation Workspace -->
@@ -147,63 +228,126 @@ const canGenerate = computed(() => state.value !== 'no-key' && prompt.value.trim
 
         <v-divider class="mb-4" />
 
-        <!-- Clarification Dialog (specifying state) -->
+        <!-- Clarification Q&A (specifying + complete states) -->
         <v-card
-          v-if="state === 'specifying'"
+          v-if="showClarification"
           variant="outlined"
-          class="mb-4 pa-6"
+          class="mb-4"
           data-testid="generate-clarification-dialog"
         >
-          <div class="d-flex align-center ga-2 mb-4">
-            <v-icon icon="mdi-robot-outline" color="primary" />
-            <h2 class="text-h6">A few quick questions to refine your model:</h2>
-          </div>
+          <v-card-item>
+            <template #prepend>
+              <v-icon icon="mdi-robot-outline" color="primary" />
+            </template>
+            <v-card-title class="text-body-1">
+              Spec clarification — a few quick questions to refine your model:
+            </v-card-title>
+          </v-card-item>
+          <v-divider />
 
-          <div class="mb-4">
-            <p class="text-body-2 font-weight-medium mb-2">Q1: What scale?</p>
-            <v-radio-group inline hide-details>
-              <v-radio label="Miniature" value="miniature" />
-              <v-radio label="Vehicle" value="vehicle" />
-              <v-radio label="Building" value="building" />
-            </v-radio-group>
-          </div>
+          <v-card-text class="pt-4">
+            <div
+              v-for="(q, qi) in mockConvo.clarificationQuestions"
+              :key="q.id"
+              :class="qi < mockConvo.clarificationQuestions.length - 1 ? 'mb-5' : 'mb-2'"
+            >
+              <p class="text-body-2 font-weight-medium mb-2">
+                Q{{ qi + 1 }}: {{ q.question }}
+              </p>
 
-          <div class="mb-4">
-            <p class="text-body-2 font-weight-medium mb-2">Q2: Interior details?</p>
-            <v-radio-group inline hide-details>
-              <v-radio label="Yes, include interior" value="yes" />
-              <v-radio label="Exterior only" value="no" />
-            </v-radio-group>
-          </div>
+              <!-- Radio options -->
+              <v-radio-group
+                v-if="q.answerType === 'radio'"
+                v-model="clarificationAnswers[q.id]"
+                inline
+                hide-details
+                density="compact"
+                :disabled="state === 'complete'"
+              >
+                <v-radio
+                  v-for="opt in q.options"
+                  :key="opt"
+                  :label="opt"
+                  :value="opt"
+                />
+              </v-radio-group>
 
-          <div class="mb-6">
-            <p class="text-body-2 font-weight-medium mb-2">Q3: Style preference?</p>
-            <v-text-field variant="outlined" density="compact" placeholder="free text…" hide-details />
-          </div>
+              <!-- Free text -->
+              <v-text-field
+                v-else
+                v-model="clarificationAnswers[q.id]"
+                variant="outlined"
+                density="compact"
+                hide-details
+                :disabled="state === 'complete'"
+              />
 
-          <v-btn color="primary" variant="flat" append-icon="mdi-arrow-right">
-            Continue →
-          </v-btn>
+              <!-- Answer indicator in complete state -->
+              <div
+                v-if="state === 'complete'"
+                class="d-flex align-center ga-1 mt-1 text-caption text-success"
+              >
+                <v-icon icon="mdi-check-circle-outline" size="14" />
+                <span>{{ clarificationAnswers[q.id] }}</span>
+              </div>
+            </div>
+          </v-card-text>
+
+          <v-card-actions v-if="state === 'specifying'" class="px-4 pb-4">
+            <v-btn color="primary" variant="flat" append-icon="mdi-arrow-right">
+              Continue →
+            </v-btn>
+          </v-card-actions>
         </v-card>
 
         <!-- Generation Stream + Model Preview (generating / complete states) -->
         <v-row
-          v-if="state === 'generating' || state === 'complete'"
+          v-if="showStream"
           class="mb-4"
           data-testid="generate-stream-preview"
         >
           <!-- Progress Feed -->
           <v-col cols="12" md="5">
             <v-card variant="outlined" height="320" class="d-flex flex-column">
-              <v-card-title class="text-body-2 py-2 px-3">Generation Progress</v-card-title>
+              <v-card-item class="py-2">
+                <v-card-title class="text-body-2">Generation Progress</v-card-title>
+              </v-card-item>
               <v-divider />
-              <v-list density="compact" class="flex-grow-1 overflow-y-auto text-body-2">
-                <v-list-item title="Parsing prompt…" prepend-icon="mdi-chevron-right" />
-                <v-list-item title="Generating geometry…" prepend-icon="mdi-chevron-right" />
-                <v-list-item title="Applying materials…" prepend-icon="mdi-chevron-right" />
-                <v-list-item title="Optimising mesh…" prepend-icon="mdi-chevron-right" />
+              <v-list density="compact" class="flex-grow-1 overflow-y-auto">
+                <v-list-item
+                  v-for="step in mockConvo.agentSteps"
+                  :key="step.id"
+                  :data-testid="`generate-step-${step.id}`"
+                >
+                  <template #prepend>
+                    <v-icon
+                      :icon="state === 'complete' ? 'mdi-check-circle-outline' : 'mdi-chevron-right'"
+                      :color="state === 'complete' ? 'success' : undefined"
+                      size="18"
+                    />
+                  </template>
+                  <v-list-item-title class="text-body-2">{{ step.label }}</v-list-item-title>
+                  <v-list-item-subtitle
+                    v-if="step.detail && state === 'complete'"
+                    class="text-caption"
+                  >
+                    {{ step.detail }}
+                  </v-list-item-subtitle>
+                </v-list-item>
               </v-list>
-              <v-progress-linear v-if="state === 'generating'" color="primary" indeterminate class="rounded-0" />
+              <v-progress-linear
+                v-if="state === 'generating'"
+                color="primary"
+                indeterminate
+                class="rounded-0"
+              />
+              <v-sheet
+                v-if="state === 'complete'"
+                color="success"
+                class="px-3 py-2 text-caption font-weight-medium text-white rounded-0 rounded-b"
+              >
+                ✓ Generation complete
+              </v-sheet>
             </v-card>
           </v-col>
 
@@ -215,9 +359,12 @@ const canGenerate = computed(() => state.value !== 'no-key' && prompt.value.trim
               class="d-flex align-center justify-center"
               data-testid="generate-model-preview"
             >
-              <div class="text-center text-medium-emphasis">
-                <v-icon icon="mdi-cube-outline" size="64" class="mb-2" />
-                <p class="text-body-2">3D geometry renders here as it is produced</p>
+              <div class="text-center text-medium-emphasis pa-4">
+                <v-icon icon="mdi-cube-outline" size="64" color="primary" class="mb-3" />
+                <p class="text-body-2 font-weight-medium mb-1">
+                  {{ mockConvo.resultSummary }}
+                </p>
+                <p class="text-caption">Interactive 3D viewer — coming in step 34</p>
               </div>
             </v-card>
           </v-col>
@@ -228,7 +375,7 @@ const canGenerate = computed(() => state.value !== 'no-key' && prompt.value.trim
           v-if="state === 'complete'"
           flat
           color="surface-variant"
-          class="rounded"
+          class="rounded mb-4"
           data-testid="generate-result-actions"
         >
           <v-btn prepend-icon="mdi-download" variant="outlined" size="small" class="mr-1">Download</v-btn>
@@ -249,7 +396,7 @@ const canGenerate = computed(() => state.value !== 'no-key' && prompt.value.trim
           <v-btn color="error" variant="outlined" prepend-icon="mdi-refresh">Retry</v-btn>
         </v-card>
 
-        <!-- Idle state prompt area -->
+        <!-- Idle / No-key placeholder area -->
         <v-sheet
           v-if="state === 'idle' || state === 'no-key'"
           color="surface-variant"
