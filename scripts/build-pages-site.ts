@@ -1,4 +1,5 @@
 #!/usr/bin/env bun
+import { existsSync } from 'node:fs';
 /**
  * build-pages-site.ts — assemble the farish GitHub Pages site.
  *
@@ -23,7 +24,6 @@
  * Docs:   scripts/README.md
  */
 import { cp, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { marked } from 'marked';
 
@@ -61,14 +61,12 @@ async function walk(dir: string): Promise<string[]> {
 /**
  * Wrap rendered markdown in the site HTML shell (CSS + Mermaid + nav).
  *
- * `siteDepth` is the directory depth of this page below the site root, e.g.
- * `_site/docs/index.html` is depth 1, `_site/docs/pages/home/SPEC.html` is
- * depth 3. Nav links are computed relative to that so the same shell works at
- * any nesting level.
+ * `docsHomeHref` / `appHref` are relative hrefs (from the page being wrapped)
+ * to `_site/docs/index.html` and the site root `_site/` respectively. The
+ * caller computes them because docs pages, the docs index, and the
+ * screenshots index all sit at different depths and below different roots.
  */
-function htmlShell(title: string, body: string, siteDepth: number): string {
-  const toRoot = '../'.repeat(siteDepth); // path from this page to _site/
-  const docsHome = `${'../'.repeat(siteDepth - 1)}index.html`; // → _site/docs/index.html
+function htmlShell(title: string, body: string, docsHomeHref: string, appHref: string): string {
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -93,7 +91,7 @@ function htmlShell(title: string, body: string, siteDepth: number): string {
 </script>
 </head>
 <body>
-<nav class="site"><a href="${up}index.html">farish docs home</a> · <a href="${up}${up}">farish app</a></nav>
+<nav class="site"><a href="${docsHomeHref}">farish docs home</a> · <a href="${appHref}">farish app</a></nav>
 ${body}
 </body>
 </html>
@@ -111,9 +109,12 @@ async function renderDocs(out: string): Promise<string[]> {
     const outPath = join(out, 'docs', rel.replace(/\.md$/, '.html'));
     await mkdir(dirname(outPath), { recursive: true });
     const md = await readFile(file, 'utf8');
-    const depth = rel.split('/').length - 1; // nesting depth for relative nav
+    // Depth of this page below _site/docs/ — `pages/home/SPEC.md` is depth 2.
+    const depth = rel.split('/').length - 1;
+    const docsHomeHref = `${'../'.repeat(depth)}index.html`; // → _site/docs/index.html
+    const appHref = '../'.repeat(depth + 1); // → _site/ (one extra level above docs/)
     const body = await marked.parse(md);
-    await writeFile(outPath, htmlShell(rel, body, depth));
+    await writeFile(outPath, htmlShell(rel, body, docsHomeHref, appHref));
     rendered.push(rel);
   }
   return rendered.sort();
@@ -130,7 +131,12 @@ Published automatically on every push to <code>main</code> (initial prompt step 
 <ul>
 ${items}
 </ul>`;
-  await writeFile(join(out, 'docs', 'index.html'), htmlShell('Documentation', body, 0));
+  // The docs index lives at _site/docs/index.html: it links to itself and to
+  // the site root one level up.
+  await writeFile(
+    join(out, 'docs', 'index.html'),
+    htmlShell('Documentation', body, 'index.html', '../'),
+  );
 }
 
 /** Copy committed screenshot runs and write a run index. */
@@ -157,7 +163,12 @@ suite on a push to <code>main</code> (initial prompt step 28).</p>
 <ul>
 ${items}
 </ul>`;
-  await writeFile(join(dest, 'index.html'), htmlShell('Screenshots', body, 1));
+  // The screenshots index lives at _site/screenshots/index.html: docs home is
+  // one level up then into docs/; the site root is one level up.
+  await writeFile(
+    join(dest, 'index.html'),
+    htmlShell('Screenshots', body, '../docs/index.html', '../'),
+  );
 }
 
 /** Copy the built Vue app into the site root. */
