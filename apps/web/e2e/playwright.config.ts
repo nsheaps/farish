@@ -19,6 +19,22 @@
  *   `e2e/output/screenshots/` so the CI workflow can publish them on a
  *   date-based path.
  * - `video: 'on'` records every test; the prompt requires recorded videos.
+ *
+ * CI hardening:
+ * - `webServer.cwd: '..'` sets the cwd for the preview server to `apps/web/`
+ *   (the package root) regardless of where playwright was invoked. Without
+ *   this, Playwright spawns the webServer command from `apps/web/e2e/`
+ *   (configDir). Bun's package-script resolution may or may not walk up to
+ *   find the parent package.json on a fresh runner — making this explicit
+ *   removes the ambiguity entirely.
+ * - `webServer.timeout: 120_000` — generous for a cold GH Actions runner that
+ *   starts Chromium for the first time after the browser install step.
+ * - `forbidOnly` — CI-standard guard: fails the run if `.only` is accidentally
+ *   left in a test file.
+ * - `launchOptions.args` — `--disable-dev-shm-usage` prevents Chromium crashes
+ *   in containers / GH runners where /dev/shm is limited to 64 MB. `--no-sandbox`
+ *   is added explicitly here even though Playwright also adds it by default
+ *   (chromiumSandbox defaults to false) — defence in depth.
  */
 import { defineConfig, devices } from '@playwright/test';
 
@@ -28,9 +44,13 @@ const PREVIEW_PORT = 4173;
 export default defineConfig({
   testDir: '.',
   testMatch: '**/*.spec.ts',
+  // Standard CI guard: abort the run if a test.only leaked into the suite.
+  forbidOnly: !!process.env.CI,
   // Screenshots must be deterministic — no retries, single worker, fixed viewport.
   retries: 0,
   workers: 1,
+  // Per-test timeout: generous for a cold runner, tight enough to surface hangs.
+  timeout: 60_000,
   // All artifacts (videos, traces, the screenshot PNGs) live under e2e/output/.
   outputDir: 'output/test-results',
   reporter: [
@@ -45,11 +65,12 @@ export default defineConfig({
     video: 'on',
     trace: 'retain-on-failure',
     // Explicit Chromium flags for CI (Docker / GitHub Actions).
-    // Playwright already adds --no-sandbox by default (chromiumSandbox !== true),
-    // but --disable-dev-shm-usage prevents crashes in containers where
-    // /dev/shm is small (default 64 MB in Docker).
+    // --no-sandbox  : Playwright adds this by default (chromiumSandbox !== true),
+    //                 but we set it explicitly as defence in depth.
+    // --disable-dev-shm-usage : prevents crashes where /dev/shm is 64 MB (Docker
+    //                           / GH Actions containers).
     launchOptions: {
-      args: ['--disable-dev-shm-usage'],
+      args: ['--no-sandbox', '--disable-dev-shm-usage'],
     },
   },
   projects: [
@@ -60,10 +81,17 @@ export default defineConfig({
   ],
   // Serve the production build. `reuseExistingServer` lets a developer point
   // the suite at an already-running preview during local iteration.
+  //
+  // `cwd: '..'` resolves to apps/web/ (the package root) — Playwright's
+  // webServer plugin defaults cwd to configDir (apps/web/e2e/), which causes
+  // `bun run preview` to depend on Bun's directory-walking behavior to find the
+  // parent package.json. Setting cwd explicitly makes the command deterministic
+  // across all environments and Bun versions.
   webServer: {
     command: `bun run preview -- --port ${PREVIEW_PORT} --strictPort`,
     url: `http://localhost:${PREVIEW_PORT}/`,
+    cwd: '..',
     reuseExistingServer: !process.env.CI,
-    timeout: 60_000,
+    timeout: 120_000,
   },
 });
