@@ -45,12 +45,12 @@ the last — do not skip steps.
    - Run `Skill(scm-utils:commit)` for each atomic commit.
    - Push: `git push origin HEAD`.
 
-7. **Verify CI — step 28 requirements.**[^step28]
+7. **Verify CI — standing step-28 requirements.**[^step28]
+   - Run `Skill(validate-app-progress)` — it enumerates and checks every
+     standing requirement: CI green, CI codepaths == local tooling,
+     screenshots of every page on `main` (`[skip ci]`, date-based path,
+     published to Pages), and specs/docs published to the Pages docs site.
    - All CI checks must be green. If any fail: fix locally (step 5), re-commit, re-push.
-   - CI must run the **same codepaths** as local (`mise run check` / nx task graph).
-   - On `main`: CI Playwright run screenshots **every page**, commits screenshots with
-     `[skip ci]` under a date-based path, and publishes them to GitHub Pages.
-   - All specs (pages, APIs, wireframes) are published to GitHub Pages on every push to `main`.
    - No PR is considered done until the CI run on that PR's branch is fully green.
 
 8. **Complete the task.**
