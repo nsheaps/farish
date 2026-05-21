@@ -1,0 +1,14 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "web",
+  "projectType": "application",
+  "sourceRoot": "apps/web/src",
+  "tags": ["scope:app"],
+  "//": "Build/test go through vite + vitest (Vue SFCs are not plain TS), so the targets run package.json scripts via nx:run-script — identical executor to every other package.",
+  "targets": {
+    "lint": { "executor": "nx:run-script", "options": { "script": "lint" } },
+    "format": { "executor": "nx:run-script", "options": { "script": "format" } },
+    "test": { "executor": "nx:run-script", "options": { "script": "test" } },
+    "build": { "executor": "nx:run-script", "options": { "script": "build" } }
+  }
+}
