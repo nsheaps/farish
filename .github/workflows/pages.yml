@@ -390,6 +390,10 @@ jobs:
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
+        with:
+          # Auto-enable GitHub Pages (source = GitHub Actions) on the first
+          # deploy — the repo's Pages setting is likely not turned on yet.
+          enablement: true
 
       # Package ./_site as the Pages artifact.
       - name: Upload Pages artifact
@@ -401,3 +405,29 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      # Failure diagnostics for the deploy job — commits step outcomes + info
+      # to ci-debug/ so a deploy failure is readable without GitHub API access.
+      - name: Capture deploy failure diagnostics [skip ci]
+        if: ${{ failure() }}
+        run: |
+          set +e
+          TS="$(date -u +%Y%m%dT%H%M%SZ)"
+          DEBUG_DIR="ci-debug/${TS}-${{ github.run_id }}-deploy"
+          mkdir -p "${DEBUG_DIR}"
+          cat > "${DEBUG_DIR}/step-outcomes.json" <<'STEP_OUTCOMES_EOF'
+          ${{ toJSON(steps) }}
+          STEP_OUTCOMES_EOF
+          {
+            echo "job: deploy-pages"
+            echo "run_id:  ${{ github.run_id }}"
+            echo "sha:     ${{ github.sha }}"
+            echo "=== _site listing ==="
+            ls -laR _site 2>&1 | head -60
+          } > "${DEBUG_DIR}/deploy-info.txt" 2>&1
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "${DEBUG_DIR}/"
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "ci(debug): deploy failure diagnostics run ${{ github.run_id }} [skip ci]"
+          git push origin HEAD:"${{ github.head_ref || github.ref_name }}"
