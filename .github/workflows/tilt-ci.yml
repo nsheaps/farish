@@ -1,0 +1,113 @@
+# tilt-ci.yml — end-to-end dev-workflow validation via `tilt ci`.
+#
+# Brings up every resource declared in the Tiltfile (deps-build, api, web)
+# using native local_resource processes (no containers), waits for all to
+# reach the "OK" state, then exits. Exit code 1 on any resource failure.
+#
+# This satisfies initial-prompt step 27 — the CI gate exercises the same
+# Tilt-managed dev stack a developer runs locally (`tilt up`).
+#
+# Amendment A5 dry-run: on pull-request events, TILT_CI_DRY_RUN=true is set
+# automatically. `tilt ci` still runs in full; the flag only adds an
+# informational notice. No irreversible side effects exist in this workflow.
+#
+# Tilt installation: the official `tilt-dev` org does not publish a
+# standalone setup-tilt action; the maintained off-the-shelf action is
+# `yokawasa/action-setup-kube-tools` which installs a pinned Tilt version
+# and caches it on the runner.
+#
+# Off-the-shelf actions used:
+#   - actions/checkout@v4                         — standard repo checkout
+#   - jdx/mise-action@v2                          — installs bun + node from mise.toml
+#   - actions/cache@v4                            — caches .nx/cache
+#   - yokawasa/action-setup-kube-tools@v0.13.1    — installs pinned Tilt binary
+
+name: Tilt CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    # Same activity types as ci.yml so draft PRs also trigger.
+    types: [opened, synchronize, reopened, ready_for_review]
+
+# A5 dry-run: automatically set on pull_request events.
+# On push to main:   TILT_CI_DRY_RUN=false (production gate).
+# On pull_request:   TILT_CI_DRY_RUN=true  (pre-merge validation — same full
+#                    execution, plus an informational notice annotation).
+env:
+  TILT_CI_DRY_RUN: ${{ github.event_name == 'pull_request' && 'true' || 'false' }}
+
+jobs:
+  tilt-ci:
+    name: tilt-ci
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1. Checkout ────────────────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Full history so nx affected can compare against any base SHA.
+          fetch-depth: 0
+
+      # ── 2. Dry-run notice (A5) ─────────────────────────────────────────────
+      - name: Dry-run notice
+        if: env.TILT_CI_DRY_RUN == 'true'
+        run: |
+          echo "::notice::TILT_CI_DRY_RUN=true — running tilt ci in dry-run mode (PR build)."
+          echo "All steps execute normally; no irreversible side-effects in this workflow."
+
+      # ── 3. Install toolchain (mise) ────────────────────────────────────────
+      # mise-action installs bun + node at versions pinned in mise.toml.
+      # bun is needed to run the API server and the Vite dev server;
+      # node is needed by nx and Vite.
+      - name: Install toolchain via mise
+        uses: jdx/mise-action@v2
+        with:
+          cache: true
+          experimental: true
+
+      # ── 4. Cache nx task results ───────────────────────────────────────────
+      # deps-build runs `nx run-many --target=build`; cache hits avoid
+      # re-compiling unchanged libs on repeat runs.
+      - name: Cache nx task results
+        uses: actions/cache@v4
+        with:
+          path: .nx/cache
+          key: nx-cache-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            nx-cache-${{ runner.os }}-
+
+      # ── 5. Install Tilt ────────────────────────────────────────────────────
+      # tilt-dev does not publish a standalone setup-tilt action.
+      # yokawasa/action-setup-kube-tools is the maintained off-the-shelf
+      # action (https://github.com/yokawasa/action-setup-kube-tools).
+      # Version 0.35.2 is the same version referenced in docs/monorepo/tilt.md.
+      - name: Install Tilt
+        uses: yokawasa/action-setup-kube-tools@v0.13.1
+        with:
+          tilt: '0.35.2'
+
+      # ── 6. Install workspace dependencies ─────────────────────────────────
+      # mise run bootstrap → .mise/tasks/bootstrap.sh → bun install
+      # Required before tilt ci so that nx (workspace dep) and all lib
+      # source files are present.
+      - name: Bootstrap (bun install)
+        run: mise run bootstrap
+
+      # ── 7. Run tilt ci ─────────────────────────────────────────────────────
+      # `tilt ci` executes every resource in the Tiltfile in dependency order:
+      #   1. deps-build — `nx run-many --target=build` (one-shot cmd)
+      #   2. api        — `bun run --watch services/api/src/server.ts`
+      #                   readiness probe: GET /health → 200 OK
+      #   3. web        — `bun run --cwd apps/web dev` (Vite dev server)
+      #                   no readiness probe; OK once the process starts
+      # Exits 0 when all three resources reach the "OK" state, 1 on any failure.
+      # TILT_DISABLE_ANALYTICS=1 suppresses telemetry from CI runners.
+      - name: Run tilt ci
+        run: tilt ci
+        timeout-minutes: 10
+        env:
+          TILT_DISABLE_ANALYTICS: '1'
