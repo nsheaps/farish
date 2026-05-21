@@ -1,0 +1,34 @@
+id: "2"
+subject: Add break-glass bypass to the task-utils write-gate hook
+status: pending
+activeForm: Adding break-glass bypass to the write-gate
+description: |-
+  The write-gate (require-task-in-progress.sh) can deadlock: when no task
+  system is reachable (MCP server down, built-in Task tools absent), the gate
+  is unsatisfiable and blocks all Write/Edit with no escape.
+
+  Add a break-glass mechanism:
+  - Hash the PreToolUse input (tool_name + tool_input).
+  - Persist the last-denied hash (sidecar state file).
+  - If the same call arrives twice in a row, ALLOW the second one through.
+  - Record the bypass (count + timestamp) in the sidecar log.
+  - Print a big, loud warning to the agent on the bypassed call.
+
+  Apply to require-task-in-progress.sh; consider task-invariant.sh too.
+  Part of the task-utils improvements (initial directive items 5-6).
+
+  <validation-steps>
+  - [ ] Hash computed from tool_name + tool_input
+  - [ ] Identical consecutive call allowed on 2nd attempt
+  - [ ] Bypass logged with count + timestamp
+  - [ ] Loud warning emitted to the agent on bypass
+  - [ ] Non-repeated denials still blocked normally
+  - [ ] Tests cover deny / bypass / reset-on-different-call
+  </validation-steps>
+blocks: []
+blockedBy: []
+metadata:
+  source-message: handler Discord 2026-05-21 — break-glass gate idea
+source: task-utils-mcp
+createdAt: "2026-05-21T18:50:00Z"
+updatedAt: "2026-05-21T18:50:00Z"

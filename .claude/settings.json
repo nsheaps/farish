@@ -4,6 +4,7 @@
     "defaultMode": "bypassPermissions"
   },
   "env": {
+    "TASK_UTILS_TASK_DIR": "/home/user/farish/.claude/tasks",
     "CLAUDE_CODE_ENABLE_TASKS": "1",
     "CLAUDE_CODE_ENABLE_BACKGROUND_PLUGIN_REFRESH": "1",
     "CLAUDE_AUTO_BACKGROUND_TASKS": "1",
@@ -49,6 +50,7 @@
     "edit-utils@ai-mktpl-local": true,
     "github@ai-mktpl-local": true,
     "github-app@ai-mktpl-local": true,
+    "1pass@ai-mktpl-local": true,
     "mise@ai-mktpl-local": true,
     "scm-utils@ai-mktpl-local": true,
     "sequential-thinking@ai-mktpl-local": true,
