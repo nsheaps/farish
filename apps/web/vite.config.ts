@@ -29,6 +29,15 @@ export default defineConfig({
       },
     },
   },
+  // Explicitly disable the API proxy in preview mode (used by `vite preview`
+  // and the Playwright screenshot suite). Vite v8 falls back to `server.proxy`
+  // when `preview.proxy` is not set — leaving the proxy active in preview
+  // causes every API request to hit ECONNREFUSED (no API server in CI or
+  // during the screenshot run) and generates noisy proxy-error logs that can
+  // delay `networkidle` detection in Playwright.
+  preview: {
+    proxy: {},
+  },
   build: {
     outDir: 'dist',
   },
