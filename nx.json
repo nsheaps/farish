@@ -1,0 +1,40 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "//": "nx task-graph + cache configuration. Docs: docs/monorepo/nx.md",
+  "namedInputs": {
+    "default": ["{projectRoot}/**/*", "sharedGlobals"],
+    "production": [
+      "default",
+      "!{projectRoot}/**/*.test.ts",
+      "!{projectRoot}/tsconfig.json"
+    ],
+    "sharedGlobals": [
+      "{workspaceRoot}/tsconfig.base.json",
+      "{workspaceRoot}/biome.json",
+      "{workspaceRoot}/bun.lock"
+    ]
+  },
+  "targetDefaults": {
+    "build": {
+      "//": "A package's build depends on its dependencies' builds (^build) so dist/.d.ts exist before a dependent type-checks.",
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"],
+      "outputs": ["{projectRoot}/dist"],
+      "cache": true
+    },
+    "lint": {
+      "inputs": ["default", "{workspaceRoot}/biome.json"],
+      "cache": true
+    },
+    "format": {
+      "inputs": ["default", "{workspaceRoot}/biome.json"],
+      "cache": false
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "inputs": ["default", "^production"],
+      "cache": true
+    }
+  },
+  "defaultBase": "main"
+}
