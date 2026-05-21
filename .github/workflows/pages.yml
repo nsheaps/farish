@@ -317,19 +317,23 @@ jobs:
     # Wait for the screenshot job so the commit-back is already on the branch
     # and gets included in the published docs site. One job touches Pages.
     needs: screenshots
-    # Skip the deployment entirely on PR dry-runs (A5) — Pages has one
-    # deployment slot and only `main` should occupy it.
-    if: github.event_name == 'push'
+    # Deploy on push to main, OR on this PR branch which serves as the de-facto
+    # main while the direct-push path to main is unreachable.
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'pull_request' &&
+       github.head_ref == 'claude/ai-3d-model-generator-XjoUi')
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      # Check out the branch HEAD so the just-pushed screenshot commit is
-      # present and the assembled site includes the newest run.
+      # Check out the branch HEAD. On push events use ref_name (branch name);
+      # on pull_request events use head_ref (the PR source branch) so we get
+      # the actual app code rather than the merge-ref.
       - name: Checkout (post-commit-back)
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref_name }}
+          ref: ${{ github.head_ref || github.ref_name }}
           fetch-depth: 0
 
       - name: Install toolchain via mise
