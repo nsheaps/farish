@@ -1,0 +1,57 @@
+# mise — tool manager + org-wide task runner for the farish monorepo.
+#
+# Docs: docs/monorepo/mise.md
+#
+# `mise` pins the toolchain so every developer and CI runner uses identical
+# versions. The `[tasks]` block defines the org-wide entrypoints
+# (lint / format / test / build) — these are the EXACT commands CI runs, so a
+# green local run means a green CI run (initial prompt step 24).
+#
+# Note: `nx` is intentionally NOT a mise tool. It is a workspace devDependency
+# pinned in `bun.lock`, because the nx CLI version must stay in lockstep with
+# the `@nx/*` plugin versions resolved by bun. See docs/monorepo/nx.md.
+
+[tools]
+bun = "1.3.11"
+node = "22.22.2"
+direnv = "latest"
+
+[env]
+# Put workspace-local binaries (nx, biome, tsc) on PATH for every shell.
+_.path = ["node_modules/.bin"]
+
+[settings]
+# Fail loudly instead of silently skipping unknown/uninstalled tools.
+not_found_auto_install = false
+
+# --- Org-wide tasks -----------------------------------------------------------
+# Each task is a thin wrapper over nx so the local DX command and the CI command
+# are identical. CI runs `mise run <task>`; so do you.
+
+[tasks.bootstrap]
+description = "Install workspace dependencies (bun install)."
+run = ".mise/tasks/bootstrap.sh"
+
+[tasks.lint]
+description = "Lint every package via the nx task graph."
+run = "nx run-many --target=lint --all"
+
+[tasks.format]
+description = "Format + autofix every package via the nx task graph."
+run = "nx run-many --target=format --all"
+
+[tasks.test]
+description = "Test every package via the nx task graph."
+run = "nx run-many --target=test --all"
+
+[tasks.build]
+description = "Build every package via the nx task graph (respects dependsOn)."
+run = "nx run-many --target=build --all"
+
+[tasks.check]
+description = "Full validation: lint + test + build (the CI gate)."
+run = ".mise/tasks/check.sh"
+
+[tasks.graph]
+description = "Print the nx project dependency graph as text."
+run = "nx graph --file=.nx-graph.json && echo 'Wrote .nx-graph.json'"
