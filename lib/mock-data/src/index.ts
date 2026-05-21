@@ -12,7 +12,7 @@ export {
   placeholderImageUrl,
   type PlaceholderImageOptions,
 } from './placeholder-image.ts';
-export { mockModelSummaries } from './mock-models.ts';
+export { mockModelCards, mockModelSummaries } from './mock-models.ts';
 export { mockModelDetail, type MockModelDetail } from './mock-model-detail.ts';
 export {
   mockGenerationConversation,
