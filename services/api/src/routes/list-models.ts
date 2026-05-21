@@ -1,31 +1,58 @@
 /**
- * @farish/api — example endpoint stub: `GET /models`.
+ * @farish/api — `GET /models` endpoint stub.
  *
- * This is the ONE worked example endpoint for the step-26 framework skeleton.
- * It returns a stubbed {@link ListModelsResponse} built from `@farish/mock-data`
- * so the browser app has a real endpoint to call end-to-end.
+ * Returns a paginated, optionally filtered list of publicly shared models.
+ * This is a STUB: it serves mock data, not a real model store. The full
+ * implementation (real data via a model abstraction, search, auth) is
+ * specified in `docs/api/list-models/SPEC.md` and implemented in later
+ * prompt steps (35+).
  *
- * It is a STUB: it serves mock data, not a real model store. The full endpoint
- * (real data via a model abstraction, pagination, auth) is specified in
- * `docs/api/list-models/SPEC.md` and implemented in later prompt steps
- * (33–35). The remaining seven endpoints in `docs/api/` are not built here.
+ * Query params handled in the stub:
+ * - `page`  — 1-based page number (default 1)
+ * - `limit` — results per page (default 24, max 100)
+ * - `sort`  — validated but not applied (stub always returns the same data)
+ * - `q`     — accepted but not applied (stub does not search)
+ * - `filter`— accepted but not applied
  */
 import { type ListModelsResponse, ROUTES } from '@farish/api-contract';
-import { mockModelSummaries } from '@farish/mock-data';
+import { mockModelCards } from '@farish/mock-data';
+import { errorResponse } from '../router.ts';
 import type { Route } from '../router.ts';
 
-/** How many mock models the stub returns. */
-const STUB_MODEL_COUNT = 8;
+/** Total number of mock models in the fake dataset. */
+const STUB_TOTAL = 48;
 
-/** Build the stubbed {@link ListModelsResponse} payload. */
-export function listModelsPayload(): ListModelsResponse {
-  const models = mockModelSummaries(STUB_MODEL_COUNT);
-  return { models, total: models.length };
+/** Valid sort values per spec. */
+const VALID_SORT = new Set(['newest', 'rating', 'popular', 'views']);
+
+/** Maximum allowed limit per spec. */
+const MAX_LIMIT = 100;
+
+/** Build the stub {@link ListModelsResponse} payload from query params. */
+export function listModelsPayload(url: URL): ListModelsResponse | Response {
+  const sort = url.searchParams.get('sort') ?? 'newest';
+  if (!VALID_SORT.has(sort)) {
+    return errorResponse('invalid_sort', 400);
+  }
+
+  const rawLimit = url.searchParams.get('limit');
+  const limit = rawLimit !== null ? Number(rawLimit) : 24;
+  if (!Number.isInteger(limit) || limit < 1 || limit > MAX_LIMIT) {
+    return errorResponse('limit_too_large', 400);
+  }
+
+  const rawPage = url.searchParams.get('page');
+  const page = rawPage !== null ? Number(rawPage) : 1;
+
+  const totalPages = Math.ceil(STUB_TOTAL / limit);
+  const items = mockModelCards(Math.min(limit, STUB_TOTAL));
+
+  return { items, total: STUB_TOTAL, page, totalPages };
 }
 
 /** The mountable list-models route. */
 export const listModelsRoute: Route = {
   method: 'GET',
   path: ROUTES.listModels,
-  handler: () => listModelsPayload(),
+  handler: (req) => listModelsPayload(new URL(req.url)),
 };
