@@ -23,3 +23,16 @@ dist/
 # direnv local environment
 .direnv/
 
+# --- CI screenshot pipeline (step 28) -----------------------------------------
+
+# Playwright e2e run artifacts (videos, traces, HTML report, raw screenshots).
+# The CI workflow copies these onto a date-based path under docs/screenshots/
+# and commits THAT — the raw output dir itself is never committed.
+apps/web/e2e/output/
+
+# Playwright's installed browser binaries.
+**/playwright-report/
+
+# Assembled GitHub Pages site (app + docs + screenshots) — built by CI.
+_site/
+
