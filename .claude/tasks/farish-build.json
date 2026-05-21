@@ -1,0 +1,9 @@
+{
+  "id": "farish-build",
+  "subject": "Build the farish AI 3D-model generator - drive prompt steps 1-37 (nsheaps/farish#1)",
+  "activeForm": "Building the farish AI 3D-model generator (nsheaps/farish#1)",
+  "status": "in_progress",
+  "description": "Orchestration task tracking the whole farish build per docs/INITIAL_PROMPT.md.\n\n## Progress\n- Steps 1-4: Claude Code config, marketplaces, plugins, web-onboarding hook, rules - done.\n- Steps 5-10: page index (docs/pages/INDEX.md, 11 pages), empty per-page SPEC.md scaffolds, PAGE-SPEC.md meta-spec - done.\n- Step 11: spec-writing skill + 3 subskills - done.\n- Step 12: writing all 11 page specs with the spec-writing skill - in progress (see step-12-page-specs.json).\n- Side: task-utils MCP task server built + CI fixed on nsheaps/agents PR #157; local-checkout marketplaces configured.\n\n## Next\n- Step 13: review page specs as a whole. Steps 14-20: wireframing + API specs. Step 21+: code.\n\n## 2026-05-21T05:04:53Z - record created in farish/.claude/tasks/ (committed flat store) per handler direction; prior records were wrongly in legacy ~/.claude/tasks/<session>/.",
+  "createdAt": "2026-05-21T05:04:53Z",
+  "updatedAt": "2026-05-21T05:04:53Z"
+}
