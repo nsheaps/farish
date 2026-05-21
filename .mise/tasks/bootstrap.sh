@@ -11,6 +11,12 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$REPO_ROOT"
 
 echo "==> Installing workspace dependencies with bun"
-bun install
+# In CI (CI=true is set by GitHub Actions and most CI providers) use
+# --frozen-lockfile so bun errors rather than silently modifying bun.lock.
+if [ "${CI:-}" = "true" ]; then
+  bun install --frozen-lockfile
+else
+  bun install
+fi
 
 echo "==> Bootstrap complete"
