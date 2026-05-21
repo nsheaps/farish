@@ -86,6 +86,43 @@ a heading.
 - Keep an endpoint spec under ~100 lines. If a resource has many
   operations, split them into separate files rather than growing one file.
 
+## Error body conventions
+
+All endpoint error responses share a common JSON shape. There are two patterns:
+
+**Standard error** (single code, no extra data):
+
+```json
+{ "error": "<error_code>" }
+```
+
+**Validation error** (multi-field validation failure, 400 only):
+
+```json
+{ "error": "validation_error", "fields": ["<field_name>", ...] }
+```
+
+The `error` code is a snake_case string (e.g. `model_not_found`,
+`unauthorized`, `internal_error`). Every endpoint's `## Errors` table lists
+all expected codes. Every endpoint must include at least one `500 internal_error`
+row.
+
+**Auth-optional endpoints** that receive an invalid bearer token should
+document their fallback behaviour (e.g. silently ignore → unauthenticated
+path, or reject with 401). Never leave this ambiguous.
+
+## Array query-param serialization
+
+Multi-value query params (e.g. `filter`) are serialised as **repeated
+params** in the query string:
+
+```
+GET /models?filter=cats&filter=dogs
+```
+
+Do not use comma-separated values (`?filter=cats,dogs`) or bracket notation
+(`?filter[]=cats`). All endpoint specs follow this convention.
+
 ## REST vs WebSocket decision
 
 Use **REST** for all request-response operations in farish's social layer:
