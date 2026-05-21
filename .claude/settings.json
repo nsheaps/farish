@@ -3,6 +3,9 @@
   "permissions": {
     "defaultMode": "bypassPermissions"
   },
+  "env": {
+    "TASK_UTILS_REQUIRE_TASK": "0"
+  },
   "extraKnownMarketplaces": {
     "agents": {
       "source": {
