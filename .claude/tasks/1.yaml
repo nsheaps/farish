@@ -13,12 +13,21 @@ description: |-
   unavailable. This file seeds the v0.1.4 flat YAML store directly.
 
   <validation-steps>
-  - [ ] 1pass@ai-mktpl-local added to farish enabledPlugins
-  - [ ] op CLI installed and resolvable
-  - [ ] OP_SERVICE_ACCOUNT_TOKEN verified working
-  - [ ] GitHub credentials obtained; an authenticated API call succeeds
-  - [ ] settings.json change committed + pushed
+  - [x] 1pass@ai-mktpl-local added to farish enabledPlugins
+    RESULT(2026-05-21T19:00Z): added in commit 48f91cd.
+  - [x] op CLI installed and resolvable
+    RESULT(2026-05-21T19:00Z): op 2.34.0 at /home/user/bin/.local/op.
+  - [x] OP_SERVICE_ACCOUNT_TOKEN verified working
+    RESULT(2026-05-21T19:00Z): op whoami -> SERVICE_ACCOUNT; vault -> AI-Jack.
+  - [x] GitHub credentials obtained; an authenticated API call succeeds
+    RESULT(2026-05-21T19:00Z): minted jack-nsheaps[bot] installation token from
+    op://AI-Jack/github--app--jack; gh api repos/nsheaps/farish succeeded.
+  - [x] settings.json change committed + pushed
+    RESULT(2026-05-21T19:00Z): committed 48f91cd, pushed to the PR branch.
   </validation-steps>
+
+  Kept in_progress so the write-gate stays satisfied across the restart needed
+  to load the task-utils MCP server and apply the 1pass/github-app config.
 blocks: []
 blockedBy: []
 metadata: {}
