@@ -385,6 +385,69 @@ not start writing code until these instructions tell you to:
 
 ---
 
+## Amendments
+
+Requirements added by the user after the original prompt was issued. They do not
+replace any step above — they constrain how the relevant steps are implemented.
+Cross-references point at the step numbers in [The Prompt](#the-prompt) they most
+affect.
+
+A1. **Repo configuration as code.** Configure the repository with the
+    `repository-settings` GitHub App[^repo-settings] (already installed by the
+    user) — branch protection / branch restrictions and all repo configuration
+    declared in `.github/settings.yml`, not clicked in the UI. *Affects steps
+    22–23.*
+
+A2. **Dependency automation with Renovate.** Adopt Renovate[^renovate] for
+    dependency updates, extending the shared config at
+    `nsheaps/renovate-config`[^nsheaps-renovate] (e.g.
+    `"extends": ["github>nsheaps/renovate-config"]`). *Affects steps 22–23.*
+
+A3. **Backend on Vercel (free plan) if required.** The app should stay
+    browser-only where possible, but realistically a backend will be needed. If
+    one is, host it on Vercel[^vercel] — **free plan only**. Document the entire
+    onboarding with screenshots: account signup, project/app creation,
+    environment-variable and secret syncing, and wiring CI to deploy to Vercel.
+    *Affects steps 26, 28, 33–35.*
+
+A4. **Cross-repo workflow sync.** `nsheaps/.github`[^nsheaps-dotgithub] hosts
+    workflows that sync shared CI/configuration across the org's repos. Account
+    for them — onboarding farish may require opening a PR against
+    `nsheaps/.github`. *Affects step 23.*
+
+A5. **PR dry-run CI gating.** Anthropic restricts this agent to the branch
+    `claude/ai-3d-model-generator-XjoUi`, so CI cannot be exercised on `main`
+    yet. Every CI workflow MUST support a **dry-run mode** that runs inside this
+    PR — including executing the code we write — to validate the workflow's
+    functionality before it reaches `main`. The dry-run is gated by an
+    environment variable provisioned through the `repository-settings`
+    configuration from A1.  *Affects steps 24, 27, 28.*
+
+A6. **Diagrams in documentation.** Documentation must use diagrams to explain
+    concepts and graphical ideas — architectures, data flows, state machines,
+    sequences. Use Mermaid[^mermaid] diagrams (they render natively on GitHub
+    and GitHub Pages). Documentation is written after the plan exists but before
+    any code is written. *Affects steps 5–22.*
+
+[^repo-settings]: Repository Settings App — <https://github.com/repository-settings/app>
+[^renovate]: Renovate documentation — <https://docs.renovatebot.com>
+[^nsheaps-renovate]: nsheaps/renovate-config — <https://github.com/nsheaps/renovate-config>
+[^vercel]: Vercel — <https://vercel.com>
+[^nsheaps-dotgithub]: nsheaps/.github — <https://github.com/nsheaps/.github>
+[^mermaid]: Mermaid — <https://mermaid.js.org>
+
+### Environment incompatibility log
+
+* **`task-utils` write-gate vs. Claude Code on the web.** The `task-utils@agents`
+  plugin's `require-task-in-progress.sh` PreToolUse hook blocks all
+  Write/Edit/MultiEdit/NotebookEdit unless a Task is `in_progress`, but the
+  `TaskCreate`/`TaskUpdate` tools are not enabled in the Claude Code on the web
+  context — making the gate unsatisfiable. Fix in flight: a branch on
+  `nsheaps/agents` adds an env-var opt-out to the hook; farish opts out via
+  `.claude/settings.json`.
+
+---
+
 ## Notes captured at kickoff
 
 * **Target repository:** `nsheaps/farish` (clarified by the user after the
