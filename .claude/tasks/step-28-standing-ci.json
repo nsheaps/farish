@@ -1,7 +1,7 @@
 {
   "id": "step-28-standing-ci",
-  "subject": "[in progress] step-28: standing CI machinery — screenshot pipeline + docs publishing + validate-app-progress skill (nsheaps/farish#1)",
+  "subject": "[done] step-28: standing CI machinery \u2014 screenshot pipeline + docs publishing + validate-app-progress skill (nsheaps/farish#1)",
   "activeForm": "Implementing step-28 standing CI machinery (nsheaps/farish#1)",
-  "status": "in_progress",
-  "description": "Step 28 of docs/INITIAL_PROMPT.md. Deliverables: (1) .github/workflows/pages.yml — on push to main + PR dry-run (A5): build Vue app, run Playwright page tests that screenshot every route + record videos, commit screenshots back under date-based path with [skip ci], assemble + deploy a GitHub Pages site (app + docs + screenshot runs). (2) Lean docs site renderer (marked-based bun script) publishing docs/ to Pages. (3) .claude/skills/validate-app-progress/SKILL.md calling out all standing CI requirements; update do-some-work to reference it. (4) Playwright e2e harness in apps/web/e2e with a page manifest matching page specs. Off-the-shelf actions only, pinned. Dry-run validatable on PR #1."
+  "status": "completed",
+  "description": "Step 28 of docs/INITIAL_PROMPT.md. Deliverables: (1) .github/workflows/pages.yml \u2014 on push to main + PR dry-run (A5): build Vue app, run Playwright page tests that screenshot every route + record videos, commit screenshots back under date-based path with [skip ci], assemble + deploy a GitHub Pages site (app + docs + screenshot runs). (2) Lean docs site renderer (marked-based bun script) publishing docs/ to Pages. (3) .claude/skills/validate-app-progress/SKILL.md calling out all standing CI requirements; update do-some-work to reference it. (4) Playwright e2e harness in apps/web/e2e with a page manifest matching page specs. Off-the-shelf actions only, pinned. Dry-run validatable on PR #1."
 }
