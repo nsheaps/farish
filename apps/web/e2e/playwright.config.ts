@@ -44,6 +44,13 @@ export default defineConfig({
     // Record a video for every test (initial prompt step 28).
     video: 'on',
     trace: 'retain-on-failure',
+    // Explicit Chromium flags for CI (Docker / GitHub Actions).
+    // Playwright already adds --no-sandbox by default (chromiumSandbox !== true),
+    // but --disable-dev-shm-usage prevents crashes in containers where
+    // /dev/shm is small (default 64 MB in Docker).
+    launchOptions: {
+      args: ['--disable-dev-shm-usage'],
+    },
   },
   projects: [
     {
