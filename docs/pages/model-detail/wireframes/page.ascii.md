@@ -30,6 +30,11 @@
 │                                              │  Rating: ★★★★☆  4.7 (83)   │
 │                                              │  ← MetadataPanel (VCard)     │
 └──────────────────────────────────────────────┴──────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ FOOTER                                                                      │
+│   About   ·   Settings   ·   GitHub ↗                                      │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ## State Notes
@@ -39,7 +44,7 @@
 | `local`      | Source is browser storage; no remote fetch; social actions hidden             |
 | `loading`    | VSkeletonLoader over viewer area; shimmer on InfoPanel                        |
 | `error`      | "Model not found" VCard with [ ← Back ] and [ Retry ] buttons; viewer hidden  |
-| `coming-soon`| Rate or Share clicked → ComingSoonOverlay (VOverlay) covers viewer + panel    |
+| `coming-soon`| Rate or Share clicked → dismissible ComingSoonOverlay (✕ to close); viewer hidden |
 
 ## Coming-Soon inline overlay (Rate / Share clicked)
 

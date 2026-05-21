@@ -122,3 +122,14 @@ Resolved from the first draft's open questions:
 Result: **11 pages** (down from 12). Reviewed a second time (step 7) — no
 further changes; the set is complete and each page maps cleanly to a flow in
 the initial prompt.
+
+## Cross-page notes (step 16)
+
+- **Global Footer.** All 11 pages include a site-wide Footer (`About · Settings
+  · GitHub ↗`). This ensures About is reachable from every page, resolving
+  the open question in the About spec. The sitemap above shows primary
+  navigation only; Footer links are implicit on every node.
+- **Model Detail coming-soon overlay** (Rate/Share click) is dismissible —
+  the user can close it and return to viewing the model without navigating away.
+  Full-page coming-soon overlays (Explore, Leaderboards, Profile) remain
+  non-dismissible since those pages have no other functional content to return to.

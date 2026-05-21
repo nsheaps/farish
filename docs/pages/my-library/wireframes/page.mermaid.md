@@ -32,7 +32,13 @@ flowchart TB
         ConfirmDeleteBtn["[ Delete ]  (VBtn danger)"]
     end
 
-    NavBar --> LibraryHeader --> ModelGrid
+    subgraph Footer["Footer"]
+        AboutLink["About"]
+        SettingsLink["Settings"]
+        GithubLink["GitHub ↗"]
+    end
+
+    NavBar --> LibraryHeader --> ModelGrid --> Footer
     LibraryHeader -. empty library .-> EmptyState_node
     Card1 & Card2 & Card3 -->|"click → /m/local:<id>"| DetailPage(("/m/local:<id>"))
     Card1 & Card2 & Card3 -->|"Delete → confirms"| DeleteDialog
@@ -51,6 +57,7 @@ flowchart TB
 | DeleteConfirmDialog    | `VDialog` (width=400, non-persistent)                   |
 | SortSelect             | `VSelect`                                               |
 | ClearAllBtn            | `VBtn` (color="error")                                  |
+| Footer                 | Static `<footer>` with `VBtn` text links                |
 
 ## State Impact
 

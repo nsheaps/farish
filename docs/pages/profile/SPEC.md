@@ -43,7 +43,10 @@ flowchart TB
     Grid[Model Grid — user's shared ModelCards]
     Empty[Empty State — no shared models yet]
     Nav --> Header --> Grid
+    Footer[Footer — About · Settings · GitHub link]
     Header -. zero models .-> Empty
+    Grid --> Footer
+    Empty --> Footer
 ```
 
 ## Components
@@ -60,6 +63,8 @@ flowchart TB
 - **EmptyState** — "No shared models yet" message.
 - **ComingSoonOverlay** — full-page overlay from
   [`../coming-soon/SPEC.md`](../coming-soon/SPEC.md) shown until backend is live.
+- **Footer** — site-wide footer with links to About, Settings, and the project
+  GitHub repository.
 
 ## States
 
@@ -90,6 +95,7 @@ author chip.
 
 **Out-links:**
 - `/m/:modelId` — ModelCard click
+- `/about`, `/settings`, GitHub — Footer links (present on all pages)
 
 ## Responsive
 

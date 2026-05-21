@@ -81,8 +81,8 @@ _None._ The page is fully static — no local or remote data dependencies.
 
 ## Navigation
 
-**In-links:** Home Footer "About" link; Settings "learn more" credential
-privacy link.
+**In-links:** Footer "About" link (present on all pages); Settings
+credential-privacy "Learn more" link in StorageNote.
 
 **Out-links:**
 - `/settings` — SettingsCTA button
@@ -96,10 +96,7 @@ than the viewport.
 
 ## Open Questions
 
-- **About link placement.** Currently only the Home and About pages include a
-  Footer with the About link, so About is not reachable from most inner pages.
-  Decide whether to add a site-wide Footer to all pages or promote About to a
-  NavBar link before wireframing.[^4]
+_None._ All open questions resolved during step-16 cross-page validation loop.
 
 ## References
 
@@ -110,5 +107,5 @@ than the viewport.
       [`../INDEX.md`](../INDEX.md).
 [^3]: William Farish (scientist), Wikipedia —
       <https://en.wikipedia.org/wiki/William_Farish_(scientist)>.
-[^4]: INDEX.md — only Home and About include a Footer section in their layouts —
-      [`../INDEX.md`](../INDEX.md).
+[^4]: Step-16 cross-page validation — resolved: site-wide Footer added to all
+      pages; About is reachable from any page via the Footer "About" link.

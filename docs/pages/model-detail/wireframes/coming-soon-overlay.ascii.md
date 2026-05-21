@@ -23,7 +23,7 @@ A `ComingSoonOverlay` (VOverlay) covers the page while staying on the model's ro
 
               ┌─────────────────────────────────────┐
               │  COMING SOON CARD (VCard + VOverlay) │
-              │                                     │
+              │                                [✕]  │  ← dismiss (VBtn icon)
               │          ⭐  (star icon)             │
               │                                     │
               │    Rating is coming soon            │
@@ -33,13 +33,15 @@ A `ComingSoonOverlay` (VOverlay) covers the page while staying on the model's ro
               │  This feature requires the shared   │
               │  backend — launching soon.           │
               │                                     │
-              │         [ ← Back to Home ]          │
+              │  [ ✕ Continue viewing ]  (VBtn text)│
               └─────────────────────────────────────┘
 ```
 
 ## Notes
 
 - This overlay is triggered per-action (Rate or Share click), not at page load.
+- **Dismissible** — unlike the full-page coming-soon on Explore/Leaderboards/Profile,
+  this overlay has a ✕ close button so users can return to viewing the model.
 - `PageIcon` uses `mdi-star` for Rating; `mdi-share-variant` for Sharing.
 - Headline changes based on which action triggered it.
 - NavBar remains fully functional above the overlay.

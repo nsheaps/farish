@@ -37,6 +37,11 @@ the backend-dependent page's own route (Explore, Leaderboards, Profile).
               │         [ ← Back to Home ]          │
               │         (HomeButton — VBtn)          │
               └─────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ FOOTER                                                                      │
+│   About   ·   Settings   ·   GitHub ↗                                      │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Component Breakdown

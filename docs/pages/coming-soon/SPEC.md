@@ -47,6 +47,8 @@ flowchart TB
     Overlay --> Headline[Page title + 'is coming soon']
     Overlay --> Note[One-sentence explanation]
     Overlay --> HomeButton[Back to Home button]
+    Footer[Footer — About · Settings · GitHub link]
+    Ghost --> Footer
 ```
 
 ## Components
@@ -63,6 +65,8 @@ flowchart TB
 - **HomeButton** — secondary button navigating to `/`.
 - **PageIcon** — contextual icon representing the target page category
   (e.g. gallery icon for Explore, trophy for Leaderboards).
+- **Footer** — site-wide footer with links to About, Settings, and the project
+  GitHub repository.
 
 ## States
 
@@ -90,6 +94,7 @@ fallback.
 
 **Out-links:**
 - `/` — HomeButton
+- `/about`, `/settings`, GitHub — Footer links (present on all pages)
 
 ## Responsive
 

@@ -22,7 +22,14 @@ flowchart TB
         end
     end
 
+    subgraph Footer["Footer"]
+        AboutLink["About"]
+        SettingsLink["Settings"]
+        GithubLink["GitHub ↗"]
+    end
+
     NavBar --> PageBody
+    PageBody --> Footer
     ThreeDViewer --- ViewerControls
     ViewerControls --> ActionBar
     MetadataPanel --- AuthorChip
@@ -48,10 +55,11 @@ flowchart TB
 | AuthorChip        | `VChip` (with avatar + name)                               |
 | ActionBar         | `VToolbar` + `VBtn` group                                  |
 | RatingWidget      | `VRating` (5-star input, backend-gated)                    |
+| Footer            | Static `<footer>` with `VBtn` text links                   |
 
 ## State Impact
 
 - **`loading`**: `ThreeDViewer` and `InfoCol` replaced by `VSkeletonLoader`.
 - **`local`**: Model loaded from browser storage; no remote fetch; Rate/Share hidden.
 - **`error`**: Both columns replaced by error `VCard` with Back and Retry `VBtn`.
-- **`coming-soon`**: `VOverlay` with `ComingSoonCard` covers the page when Rate/Share clicked.
+- **`coming-soon`**: Dismissible `VOverlay` with `ComingSoonCard` covers the page when Rate/Share clicked; ✕ button returns user to model view.

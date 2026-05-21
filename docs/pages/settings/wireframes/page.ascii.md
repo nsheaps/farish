@@ -29,6 +29,7 @@
                     │  🔒 Your credentials are stored in your │
                     │  browser only and are never sent to     │
                     │  farish servers.                        │
+                    │  Learn more → /about                    │
                     │                                         │
                     │  ─── PREFERENCES ───────────────────── │
                     │                                         │
@@ -49,6 +50,11 @@
                     │  all preferences from this browser.     │
                     │                                         │
                     └─────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ FOOTER                                                                      │
+│   About   ·   Settings   ·   GitHub ↗                                      │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ## State Notes

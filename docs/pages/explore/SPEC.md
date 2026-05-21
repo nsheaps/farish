@@ -44,7 +44,8 @@ flowchart TB
         Grid[Model Grid — responsive card grid]
     end
     Pagination[Pagination / Load More]
-    Nav --> SearchBar --> Controls --> Body --> Pagination
+    Footer[Footer — About · Settings · GitHub link]
+    Nav --> SearchBar --> Controls --> Body --> Pagination --> Footer
 ```
 
 ## Components
@@ -63,6 +64,8 @@ flowchart TB
 - **NoResultsState** — "No matches for '{query}'" + Clear Search button.
 - **ComingSoonOverlay** — full-page overlay from [`../coming-soon/SPEC.md`](../coming-soon/SPEC.md)
   rendered until backend is live.
+- **Footer** — site-wide footer with links to About, Settings, and the project
+  GitHub repository.
 
 ## States
 
@@ -98,12 +101,13 @@ flowchart TB
 
 ## Navigation
 
-**In-links:** NavBar (all pages); Home hero secondary CTA; Model Detail "Back to
-Explore" breadcrumb.
+**In-links:** NavBar (all pages); Home hero secondary CTA; browser back from
+Model Detail.
 
 **Out-links:**
 - `/m/:modelId` — ModelCard click
 - `/u/:username` — author chip click
+- `/about`, `/settings`, GitHub — Footer links (present on all pages)
 
 ## Responsive
 

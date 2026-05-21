@@ -37,7 +37,8 @@ flowchart TB
     Tabs[Board Tabs — Best Rated · Most Rated · Most Viewed]
     Bucket[Time Bucket Selector — 1W · 1M · 1Y · All]
     List[Ranked Model List — ordered entries with rank badge + metric]
-    Nav --> Tabs --> Bucket --> List
+    Footer[Footer — About · Settings · GitHub link]
+    Nav --> Tabs --> Bucket --> List --> Footer
 ```
 
 ## Components
@@ -53,6 +54,8 @@ flowchart TB
 - **EmptyState** — "No models ranked yet for this period."
 - **ComingSoonOverlay** — full-page overlay from
   [`../coming-soon/SPEC.md`](../coming-soon/SPEC.md) shown until backend is live.
+- **Footer** — site-wide footer with links to About, Settings, and the project
+  GitHub repository.
 
 ## States
 
@@ -88,6 +91,7 @@ flowchart TB
 **Out-links:**
 - `/m/:modelId` — RankedModelCard click
 - `/u/:username` — author chip click
+- `/about`, `/settings`, GitHub — Footer links (present on all pages)
 
 ## Responsive
 

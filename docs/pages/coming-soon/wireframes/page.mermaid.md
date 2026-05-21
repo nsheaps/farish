@@ -21,7 +21,14 @@ flowchart TB
         end
     end
 
+    subgraph Footer["Footer"]
+        AboutLink["About"]
+        SettingsLink["Settings"]
+        GithubLink["GitHub ↗"]
+    end
+
     NavBar --> PageBody
+    PageBody --> Footer
     GhostWireframe --- ComingSoonOverlay
     HomeButton -->|"navigate to /"| HomePage(("/"))
 ```
@@ -36,6 +43,7 @@ flowchart TB
 | ComingSoonCard     | `VCard` (max-width 480px, elevation 8)                            |
 | PageIcon           | `VIcon` (`mdi-rocket`, `mdi-image-multiple`, `mdi-trophy`, `mdi-account`) |
 | HomeButton         | `VBtn` (variant="outlined")                                       |
+| Footer             | Static `<footer>` with `VBtn` text links                          |
 
 ## State Impact
 

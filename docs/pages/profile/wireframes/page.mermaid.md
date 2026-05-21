@@ -31,7 +31,13 @@ flowchart TB
         EmptyMsg["No shared models yet."]
     end
 
-    NavBar --> ProfileHeader --> ModelGrid
+    subgraph Footer["Footer"]
+        AboutLink["About"]
+        SettingsLink["Settings"]
+        GithubLink["GitHub ↗"]
+    end
+
+    NavBar --> ProfileHeader --> ModelGrid --> Footer
     ProfileHeader -. zero models .-> EmptyState_node
     Card1 & Card2 & Card3 & CardN -->|"click → /m/:modelId"| DetailPage(("/m/:modelId"))
 ```
@@ -48,6 +54,7 @@ flowchart TB
 | ModelCard         | `VCard` + `VRating`                                    |
 | EmptyState        | `VCard` (centered text)                                |
 | LoadMore          | `VBtn` (variant="text")                                |
+| Footer            | Static `<footer>` with `VBtn` text links               |
 
 ## State Impact
 

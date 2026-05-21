@@ -41,8 +41,15 @@ flowchart TB
         end
     end
 
+    subgraph Footer["Footer"]
+        AboutLink["About"]
+        SettingsLink["Settings"]
+        GithubLink["GitHub ↗"]
+    end
+
     NavBar --> NoKeyBanner_node
     NavBar --> Workspace
+    Workspace --> Footer
     LeftPanel --> Center
     PromptBar -->|"submit → generating"| GenerationStream
     PromptBar -->|"submit → specifying"| ClarificationArea
@@ -67,6 +74,7 @@ flowchart TB
 | ClarificationDialog | Inline `VCard` / `VDialog` with radio inputs + text      |
 | ResultActions       | `VToolbar` + `VBtn` group                                |
 | ErrorPanel          | `VCard` (variant="outlined", color="error") + `VBtn`     |
+| Footer              | Static `<footer>` with `VBtn` text links                 |
 
 ## State Impact
 

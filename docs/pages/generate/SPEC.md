@@ -44,6 +44,8 @@ flowchart TB
     Workspace --> Params[Parameters Panel — collapsible sidebar]
     Workspace --> Progress[Live Progress — agent-loop stream + 3D preview]
     Workspace --> Result[Result View — viewer + Download · Save · Share]
+    Footer[Footer — About · Settings · GitHub link]
+    Result --> Footer
 ```
 
 ## Components
@@ -64,6 +66,8 @@ flowchart TB
 - **ResultActions** — Download, Save to Library, and Share buttons shown after
   generation completes.
 - **ErrorPanel** — generation error description + Retry button.
+- **Footer** — site-wide footer with links to About, Settings, and the project
+  GitHub repository.
 
 ## States
 
@@ -115,6 +119,7 @@ similar" button; My Library empty-state CTA.
 - `/settings` — NoKeyBanner link (with `?return=/generate`)
 - `/library` — after "Save to Library"
 - `/m/:modelId` — after "Share" publishes model (backend-gated)
+- `/about`, `/settings`, GitHub — Footer links (present on all pages)
 
 ## Responsive
 

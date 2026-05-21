@@ -37,7 +37,8 @@ flowchart TB
     Message[Message — friendly one-liner + attempted URL]
     HomeButton[Home Button — primary CTA]
     ExploreLink[Explore Link — secondary suggestion]
-    Nav --> Illustration --> Headline --> Message --> HomeButton --> ExploreLink
+    Footer[Footer — About · Settings · GitHub link]
+    Nav --> Illustration --> Headline --> Message --> HomeButton --> ExploreLink --> Footer
 ```
 
 ## Components
@@ -52,6 +53,8 @@ flowchart TB
 - **HomeButton** — primary button linking to `/`.
 - **ExploreLink** — secondary text link: "Try searching in Explore" linking
   to `/explore`.
+- **Footer** — site-wide footer with links to About, Settings, and the project
+  GitHub repository.
 
 ## States
 
@@ -76,6 +79,7 @@ _None._ The attempted path may be read from the router for display in
 **Out-links:**
 - `/` — HomeButton
 - `/explore` — ExploreLink
+- `/about`, `/settings`, GitHub — Footer links (present on all pages)
 
 ## Responsive
 

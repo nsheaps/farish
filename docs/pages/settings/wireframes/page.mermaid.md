@@ -38,7 +38,14 @@ flowchart TB
         end
     end
 
+    subgraph Footer["Footer"]
+        AboutLink_f["About"]
+        SettingsLink_f["Settings"]
+        GithubLink_f["GitHub ↗"]
+    end
+
     NavBar --> Container
+    Container --> Footer
     ConnectionSection --> StorageNote_node --> Preferences --> DangerZone
     ClearDataBtn -->|"opens dialog"| ClearDialog
     ConfirmBtn -->|"wipe localStorage → redirect"| HomePage(("/"))
@@ -60,6 +67,7 @@ flowchart TB
 | DefaultParamsEditor     | `VSlider` + `VSelect`                                 |
 | ClearDataButton         | `VBtn` (color="error")                                |
 | ClearDataDialog         | `VDialog` (width=440)                                 |
+| Footer                  | Static `<footer>` with `VBtn` text links              |
 
 ## State Impact
 

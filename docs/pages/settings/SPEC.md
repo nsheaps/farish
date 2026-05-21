@@ -42,7 +42,8 @@ flowchart TB
     Storage[Storage Note — where credentials live, privacy guarantee]
     Prefs[Preferences — theme toggle · default generation params]
     Danger[Danger Zone — Clear All Data]
-    Nav --> Connect --> Storage --> Prefs --> Danger
+    Footer[Footer — About · Settings · GitHub link]
+    Nav --> Connect --> Storage --> Prefs --> Danger --> Footer
 ```
 
 ## Components
@@ -63,6 +64,8 @@ flowchart TB
   and complexity (mirrors ParametersPanel in Generate).
 - **ClearDataButton** — triggers a confirmation dialog then wipes all browser
   storage (credentials, library, preferences).
+- **Footer** — site-wide footer with links to About, Settings, and the project
+  GitHub repository.
 
 ## States
 
@@ -106,7 +109,8 @@ Settings icon; About credential-privacy link.
 
 **Out-links:**
 - `?return=` target URL — after successful connection
-- `/about` — credential-privacy details link
+- `/about` — credential-privacy details link (StorageNote + Footer)
+- GitHub — Footer link
 
 ## Responsive
 

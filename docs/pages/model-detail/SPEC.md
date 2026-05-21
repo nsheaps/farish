@@ -47,8 +47,10 @@ flowchart LR
     Actions[Action Bar — Download · Save · Rate · Share · Generate Similar]
     Nav --> Viewer
     Nav --> Info
+    Footer[Footer — About · Settings · GitHub link]
     Viewer --- Actions
     Info --- Actions
+    Actions --> Footer
 ```
 
 ## Components
@@ -70,6 +72,8 @@ flowchart LR
 - **RatingWidget** — 5-star input; shows coming-soon overlay (backend-gated).
 - **ShareButton** — copies canonical URL or shows coming-soon overlay.
 - **GenerateSimilarButton** — navigates to `/generate?prompt=<encoded-prompt>`.
+- **Footer** — site-wide footer with links to About, Settings, and the project
+  GitHub repository.
 
 ## States
 
@@ -79,7 +83,7 @@ flowchart LR
 | `loading`     | Remote model fetch in flight         | Skeleton viewer + shimmer on Info panel                        |
 | `default`     | Remote model loaded                  | Viewer + Info panel + Action bar                               |
 | `error`       | Model not found or fetch failed      | Error card "Model not found" with Back and Retry buttons       |
-| `coming-soon` | Rate or Share clicked, no backend    | ComingSoonOverlay from [`../coming-soon/SPEC.md`](../coming-soon/SPEC.md) |
+| `coming-soon` | Rate or Share clicked, no backend    | Dismissible ComingSoonOverlay (action-scoped; ✕ to return to model view) |
 
 ## Interactions
 
@@ -88,9 +92,10 @@ flowchart LR
 - **Click fullscreen** → expand viewer to fill the viewport.
 - **Click Download** → trigger browser download of the GLB geometry file.
 - **Click Save to Library** → write model record to local browser storage.
-- **Click Rate** → coming-soon overlay (backend-gated).
+- **Click Rate** → dismissible coming-soon overlay (backend-gated); user can
+  close overlay with ✕ to return to the model view.
 - **Click Share** → copy URL to clipboard if model is already published; else
-  coming-soon overlay.
+  dismissible coming-soon overlay (same dismiss behavior as Rate).
 - **Click Generate Similar** → navigate to
   `/generate?prompt=<url-encoded-prompt>`.
 - **Click author chip** → navigate to `/u/:username` (coming-soon state on
@@ -116,7 +121,8 @@ shared URL.
 - `/generate` — Generate Similar button (with `?prompt=`)
 - `/library` — Save to Library confirmation
 - `/u/:username` — AuthorChip
-- `/explore` — browser back or "Back to Explore" breadcrumb
+- `/explore` — browser back (no persistent breadcrumb; referrer-aware back button considered for v2)
+- `/about`, `/settings`, GitHub — Footer links (present on all pages)
 
 ## Responsive
 

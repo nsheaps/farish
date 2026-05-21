@@ -39,7 +39,13 @@ flowchart TB
         ClearSearch["[ Clear Search ]  (VBtn)"]
     end
 
-    NavBar --> SearchRow --> ControlsRow --> Body
+    subgraph Footer["Footer"]
+        AboutLink["About"]
+        SettingsLink["Settings"]
+        GithubLink["GitHub ↗"]
+    end
+
+    NavBar --> SearchRow --> ControlsRow --> Body --> Footer
     FilterPanel --> MainContent
     MainContent --> LoadMore
 ```
@@ -58,6 +64,7 @@ flowchart TB
 | EmptyState         | `VCard` with centered illustration slot                      |
 | NoResultsState     | `VCard` with text + `VBtn`                                   |
 | LoadMore           | `VBtn` (variant="text" or "outlined")                        |
+| Footer             | Static `<footer>` with `VBtn` text links                     |
 
 ## State Impact
 

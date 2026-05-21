@@ -15,7 +15,13 @@ flowchart TB
         ExploreLink["Try searching in Explore →  (VBtn text)"]
     end
 
-    NavBar --> CenteredCard
+    subgraph Footer["Footer"]
+        AboutLink["About"]
+        SettingsLink["Settings"]
+        GithubLink["GitHub ↗"]
+    end
+
+    NavBar --> CenteredCard --> Footer
     HomeButton -->|"navigate to /"| HomePage(("/"))
     ExploreLink -->|"navigate to /explore"| ExplorePage(("/explore"))
 ```
@@ -30,6 +36,7 @@ flowchart TB
 | NotFoundMessage        | `<p>` text; `{path}` read from Vue Router `$route.path` |
 | HomeButton             | `VBtn` (variant="elevated", color="primary")            |
 | ExploreLink            | `VBtn` (variant="text")                                 |
+| Footer                 | Static `<footer>` with `VBtn` text links                |
 
 ## State Impact
 

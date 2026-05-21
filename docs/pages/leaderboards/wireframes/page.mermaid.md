@@ -31,7 +31,13 @@ flowchart TB
         EmptyMsg["No models ranked yet for this period."]
     end
 
-    NavBar --> BoardTabs --> TimeBucket --> RankedList
+    subgraph Footer["Footer"]
+        AboutLink["About"]
+        SettingsLink["Settings"]
+        GithubLink["GitHub ↗"]
+    end
+
+    NavBar --> BoardTabs --> TimeBucket --> RankedList --> Footer
 
     Entry1 & Entry2 & Entry3 & EntryN -->|"click → /m/:modelId"| DetailPage(("/m/:modelId"))
     TabBestRated & TabMostRated & TabMostViewed -->|"update ?board= param"| TimeBucket
@@ -48,6 +54,7 @@ flowchart TB
 | RankedList            | `VList` + `VListItem`                           |
 | RankedModelCard       | `VListItem` with avatar, title, subtitle slots  |
 | EmptyState            | `VCard` with centered text                      |
+| Footer                | Static `<footer>` with `VBtn` text links        |
 
 ## State Impact
 

@@ -40,7 +40,10 @@ flowchart TB
     Grid[Model Grid — LibraryModelCard per saved model]
     Empty[Empty State — illustration + Generate CTA]
     Nav --> Header --> Grid
+    Footer[Footer — About · Settings · GitHub link]
     Header -. no models .-> Empty
+    Grid --> Footer
+    Empty --> Footer
 ```
 
 ## Components
@@ -57,6 +60,8 @@ flowchart TB
   CTA linking to [`../generate/SPEC.md`](../generate/SPEC.md).
 - **DeleteConfirmDialog** — modal asking the user to confirm before removing a
   model from storage.
+- **Footer** — site-wide footer with links to About, Settings, and the project
+  GitHub repository.
 
 ## States
 
@@ -94,6 +99,7 @@ action); NavBar "Library" link.
 **Out-links:**
 - `/m/local:<localId>` — LibraryModelCard click
 - `/generate` — EmptyState CTA
+- `/about`, `/settings`, GitHub — Footer links (present on all pages)
 
 ## Responsive
 
