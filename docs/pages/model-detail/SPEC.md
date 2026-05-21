@@ -64,7 +64,7 @@ flowchart LR
 - **PromptDisplay** — read-only display of the prompt used to generate the model.
 - **ParamsDisplay** — collapsible panel showing generation parameters
   (resolution, style, complexity).
-- **MetadataPanel** — author chip, creation date, view count, average rating.
+- **MetadataPanel** — model title, author chip, creation date, view count, average rating.
 - **AuthorChip** — author avatar + name; links to
   [`../profile/SPEC.md`](../profile/SPEC.md) (coming-soon state until backend).
 - **DownloadButton** — triggers browser download of the geometry file.
@@ -103,9 +103,9 @@ flowchart LR
 
 ## Data
 
-- `model` — model record (id, prompt, params, geometryUrl, thumbnailUrl,
-  authorName, authorId, createdAt, viewCount, ratingAvg, ratingCount).
-  `remote` for shared models; `local` for browser-stored models.
+- `model` — model record (id, title, prompt, params, geometryUrl, thumbnailUrl,
+  authorName, authorId, authorUsername, createdAt, viewCount, ratingAvg,
+  ratingCount). `remote` for shared models; `local` for browser-stored models.
 - `viewerSettings` — camera position and active lighting preset. `local`
   (browser storage; persisted across sessions).
 - `userRating` — the current user's own star rating. `remote`, write

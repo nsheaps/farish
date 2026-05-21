@@ -115,6 +115,11 @@ action strip.
 - **Storage quota.** Geometry blobs can be large; the page should gracefully
   handle `QuotaExceededError` from the storage API — surface in Open Questions
   for the implementation step.
+- **Share from Library.** The summary notes that sharing from My Library is
+  planned for when the backend exists. At that point, a Share action on
+  `LibraryModelCard` would call `POST /models` (see
+  [`../../docs/api/create-model/SPEC.md`](../../docs/api/create-model/SPEC.md)).
+  Until then, sharing routes through Model Detail.
 
 ## References
 

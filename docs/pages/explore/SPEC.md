@@ -92,7 +92,7 @@ flowchart TB
 ## Data
 
 - `models` — paginated list of shared models (id, title, thumbnailUrl,
-  authorName, ratingAvg, viewCount, createdAt). `remote`, read-only.
+  authorName, authorUsername, ratingAvg, viewCount, createdAt). `remote`, read-only.
 - `query` — active search text. `local` (URL param `?q=`).
 - `sortBy` — active sort field (newest|rating|popular|views). `local` (URL
   param `?sort=`).

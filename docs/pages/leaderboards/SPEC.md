@@ -81,8 +81,8 @@ flowchart TB
 - `timeBucket` — active time window (1w|1m|1y|all). `local` (URL param
   `?period=`).
 - `rankings` — ordered list of model records with rank position and metric
-  value (id, title, thumbnailUrl, authorName, rank, metricValue). `remote`,
-  read-only.
+  value (id, title, thumbnailUrl, authorName, authorUsername, rank, metricValue).
+  `remote`, read-only.
 
 ## Navigation
 
