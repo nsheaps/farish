@@ -12,7 +12,12 @@ amendments, but the actual IaC lands with later steps:
 | GitHub Pages            | Static browser app + docs site            | steps 24, 27, 28     |
 | Vercel (free plan)      | Backend / social layer, if required       | amendment A3         |
 | `.github/settings.yml`  | Repo config as code (branch protection)   | amendment A1         |
-| ghcr.io                 | Container/package publishing              | step 26              |
+| ghcr.io                 | Container/package publishing — see [`ghcr.md`](./ghcr.md) | step 26 |
+
+The `@farish/api` service has a publishing target wired now: a
+[`Dockerfile`](../services/api/Dockerfile) plus a gated `release` script
+([`.mise/tasks/publish-api.sh`](../.mise/tasks/publish-api.sh)) that pushes the
+image to ghcr.io. See [`ghcr.md`](./ghcr.md) for the full flow.
 
 ## Convention
 
