@@ -98,6 +98,7 @@ jobs:
             nx-cache-${{ runner.os }}-
 
       - name: Bootstrap (bun install)
+        id: bootstrap
         run: mise run bootstrap
 
       # Cache the Playwright Chromium browser binary.
@@ -121,6 +122,7 @@ jobs:
       # browser download when the binary already exists in the cache; the
       # --with-deps flag only re-runs the apt install portion.
       - name: Install Playwright browsers (+ system deps)
+        id: playwright-install
         run: bun run --cwd apps/web playwright install --with-deps chromium
 
       # Build the app, then run the screenshot suite against the production
@@ -130,6 +132,7 @@ jobs:
       # no dist/ exists yet. The underlying package script is still
       # `vite build && playwright test`, so local and CI run the same code.
       - name: Build app + run screenshot suite
+        id: e2e
         run: nx run web:e2e
 
       # Copy the raw PNGs onto a date-based path: docs/screenshots/<date>-<run>/.
@@ -144,6 +147,7 @@ jobs:
       # Upload the raw run (screenshots, videos, HTML report) as a workflow
       # artifact — always, even on dry-runs, so PR authors can inspect output.
       - name: Upload Playwright artifacts
+        id: upload-artifacts
         uses: actions/upload-artifact@v4
         with:
           name: playwright-run-${{ github.run_id }}
@@ -195,6 +199,14 @@ jobs:
           mkdir -p "${DEBUG_DIR}"
 
           echo "=== Diagnostics capture: ${DEBUG_DIR} ==="
+
+          # ── 0. Per-step outcomes — which job step actually failed ──────────
+          # GitHub expands ${{ toJSON(steps) }} to a JSON object keyed by each
+          # step id, each with .outcome / .conclusion. This is the definitive
+          # answer to "which step failed".
+          cat > "${DEBUG_DIR}/step-outcomes.json" <<'STEP_OUTCOMES_EOF'
+          ${{ toJSON(steps) }}
+          STEP_OUTCOMES_EOF
 
           # ── 1. Environment / versions ──────────────────────────────────────
           {
