@@ -4,7 +4,14 @@
     "defaultMode": "bypassPermissions"
   },
   "env": {
-    "TASK_UTILS_REQUIRE_TASK": "0"
+    "TASK_UTILS_REQUIRE_TASK": "0",
+    "CLAUDE_CODE_ENABLE_TASKS": "1",
+    "CLAUDE_CODE_ENABLE_BACKGROUND_PLUGIN_REFRESH": "1",
+    "CLAUDE_AUTO_BACKGROUND_TASKS": "1",
+    "CLAUDE_CODE_DISABLE_CRON": "0",
+    "CLAUDE_CODE_DISABLE_BACKGROUND_TASKS": "0",
+    "CLAUDE_CODE_EXIT_AFTER_STOP_DELAY": "60000",
+    "FORCE_AUTOUPDATE_PLUGINS": "1"
   },
   "extraKnownMarketplaces": {
     "agents": {
