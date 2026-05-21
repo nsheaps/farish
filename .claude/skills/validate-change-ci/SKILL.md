@@ -50,7 +50,13 @@ Validation procedure for GitHub Actions workflow changes.
 ## Notes
 
 - Amendment A5 requires all workflows to support dry-run on the dev branch.[^a5]
+- `CI_DRY_RUN` is computed from `github.event_name == 'pull_request'` — no repo
+  variable needed. PRs automatically run in dry-run mode.
 - `[no ci]` commit messages must be used for doc-update commits from CI (step 28).
+- nx cache lives in `.nx/cache/`; cache it with `actions/cache@v4` keyed on
+  `runner.os` + `hashFiles('bun.lock')`.
+- Required status check context for branch protection: `check` (the job id in
+  `ci.yml`). Verify after first CI run — GitHub may report it as `CI / check`.
 - **Update this skill** when step 27 adds the `tilt ci` workflow and when step 28
   finalises screenshot upload patterns.
 
