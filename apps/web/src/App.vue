@@ -5,7 +5,7 @@
  * Provides the site-wide chrome (NavBar + Footer per docs/pages/INDEX.md) and
  * a `RouterView` for the active page.
  *
- * NavBar links: Generate · Explore · Leaderboards · Library
+ * NavBar links: Generate · Explore · Leaderboards · Library · ⚙ Settings icon
  * Footer links: About · Settings · GitHub
  *
  * Per INDEX.md cross-page notes: all 11 pages include this global NavBar and Footer.
@@ -14,7 +14,7 @@
 
 <template>
   <v-app>
-    <!-- Global NavBar — links to the four primary destinations -->
+    <!-- Global NavBar — links to the four primary destinations + settings icon -->
     <v-app-bar color="primary" flat data-testid="nav-bar">
       <v-app-bar-title>
         <RouterLink to="/" class="text-white text-decoration-none font-weight-bold">
@@ -26,6 +26,13 @@
         <v-btn variant="text" to="/explore" data-testid="nav-explore">Explore</v-btn>
         <v-btn variant="text" to="/leaderboards" data-testid="nav-leaderboards">Leaderboards</v-btn>
         <v-btn variant="text" to="/library" data-testid="nav-library">Library</v-btn>
+        <v-btn
+          icon="mdi-cog"
+          variant="text"
+          to="/settings"
+          aria-label="Settings"
+          data-testid="nav-settings-icon"
+        />
       </template>
     </v-app-bar>
 
