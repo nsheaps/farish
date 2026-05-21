@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "farish",
+  "metadata": {
+    "description": "Claude Code plugin marketplace for the farish project.",
+    "version": "0.0.0"
+  },
+  "plugins": [
+    {
+      "name": "farish-dx",
+      "source": "./farish-dx",
+      "description": "Developer-experience helpers for working in the farish monorepo."
+    }
+  ]
+}

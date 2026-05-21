@@ -1,0 +1,21 @@
+{
+  "name": "@farish/math",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Dummy leaf library — shared math helpers. Exercises the nx graph.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "lint": "biome lint ./src",
+    "format": "biome check --write ./src",
+    "test": "bun test",
+    "build": "tsc -p tsconfig.json"
+  }
+}
