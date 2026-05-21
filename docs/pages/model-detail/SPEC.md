@@ -53,6 +53,8 @@ flowchart LR
 
 ## Components
 
+- **NavBar** — site-wide navigation bar; links to Generate, Explore,
+  Leaderboards, My Library, and Settings.
 - **ThreeDViewer** — WebGL canvas with orbit, pan, and zoom controls; renders
   the model geometry (expected format: GLB).[^3]
 - **ViewerControls** — camera-reset, fullscreen, and lighting-preset toggle
@@ -107,7 +109,8 @@ flowchart LR
 ## Navigation
 
 **In-links:** Generate (post-save redirect); My Library (card click); Explore,
-Leaderboards, Profile (card clicks); direct shared URL.
+Leaderboards, Profile (card clicks); Home (TrendingStrip card click); direct
+shared URL.
 
 **Out-links:**
 - `/generate` — Generate Similar button (with `?prompt=`)

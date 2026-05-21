@@ -51,11 +51,15 @@ flowchart TB
 
 ## Components
 
+- **NavBar** — site-wide navigation bar; links to Generate, Explore,
+  Leaderboards, My Library, and Settings.
 - **GhostWireframe** — a dimmed (e.g. 30 % opacity, blurred) rendering of the
   target page using hardcoded mock data (lorem ipsum titles, placeholder
   thumbnail images). Makes the future design tangible without real data.
 - **ComingSoonCard** — centered modal-style card containing the icon, headline,
-  note, and action button. Not dismissible.
+  note, and action button. Not dismissible. Together with GhostWireframe this
+  constitutes the **ComingSoonOverlay** referenced by backend-dependent page
+  specs (Explore, Leaderboards, Profile, Model Detail).
 - **HomeButton** — secondary button navigating to `/`.
 - **PageIcon** — contextual icon representing the target page category
   (e.g. gallery icon for Explore, trophy for Leaderboards).

@@ -46,7 +46,8 @@ flowchart TB
 - **NavBar** — site-wide top bar with links to Generate, Explore, Leaderboards,
   My Library, and a Settings icon.
 - **HeroSection** — headline ("AI-generated 3D models, instantly"), brief
-  tagline explaining farish, and the primary CTA button.
+  tagline explaining farish, the primary CTA button, and secondary text links
+  to Explore and Leaderboards.
 - **GenerateCTA** — primary button linking to [`../generate/SPEC.md`](../generate/SPEC.md).
 - **TrendingStrip** — horizontally scrollable row of `ModelCard` components
   sourced from the most-viewed models endpoint; hidden in the `degraded` state.
@@ -65,6 +66,8 @@ flowchart TB
 ## Interactions
 
 - **Click GenerateCTA** → navigate to `/generate`.
+- **Click "Explore" secondary link in HeroSection** → navigate to `/explore`.
+- **Click "Leaderboards" secondary link in HeroSection** → navigate to `/leaderboards`.
 - **Click a ModelCard in TrendingStrip** → navigate to `/m/:modelId`.
 - **Click Explore in NavBar** → navigate to `/explore`.
 - **Click Leaderboards in NavBar** → navigate to `/leaderboards`.
@@ -83,8 +86,8 @@ flowchart TB
 
 **Out-links:**
 - `/generate` — primary CTA and NavBar
-- `/explore` — NavBar
-- `/leaderboards` — NavBar
+- `/explore` — NavBar and HeroSection secondary link
+- `/leaderboards` — NavBar and HeroSection secondary link
 - `/library` — NavBar
 - `/m/:modelId` — TrendingStrip cards
 - `/settings` — NavBar icon

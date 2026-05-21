@@ -49,6 +49,8 @@ flowchart TB
 
 ## Components
 
+- **NavBar** — site-wide navigation bar; links to Generate, Explore,
+  Leaderboards, My Library, and Settings.
 - **SearchBar** — debounced text input; updates `?q=` URL param on change.
 - **SortSelector** — dropdown: Newest, Highest Rated, Most Popular, Most Viewed.
 - **FilterChips** — active filters shown as removable chips in the controls row.
@@ -96,8 +98,8 @@ flowchart TB
 
 ## Navigation
 
-**In-links:** NavBar (all pages); Home hero secondary CTA; Model Detail "Explore
-more" link.
+**In-links:** NavBar (all pages); Home hero secondary CTA; Model Detail "Back to
+Explore" breadcrumb.
 
 **Out-links:**
 - `/m/:modelId` — ModelCard click

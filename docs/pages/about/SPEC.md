@@ -28,8 +28,8 @@ static.
 - **Curious visitors** wanting context on the project's name and purpose.
 - **Privacy-conscious users** investigating how credentials are handled before
   connecting a key.
-- Entry from: Footer "About" link (all pages); [`../settings/SPEC.md`](../settings/SPEC.md)
-  credential-privacy detail link.
+- Entry from: Home Footer "About" link;
+  [`../settings/SPEC.md`](../settings/SPEC.md) credential-privacy detail link.
 
 ## Layout
 
@@ -47,6 +47,8 @@ flowchart TB
 
 ## Components
 
+- **NavBar** — site-wide navigation bar; links to Generate, Explore,
+  Leaderboards, My Library, and Settings.
 - **AboutHero** — page heading ("About farish") and a one-sentence tagline
   describing the project.
 - **FarishHistory** — prose section about William Farish (1759–1837) and his
@@ -60,6 +62,7 @@ flowchart TB
   servers.
 - **SettingsCTA** — secondary CTA button "Connect your key in Settings" linking
   to [`../settings/SPEC.md`](../settings/SPEC.md).
+- **Footer** — site footer with links to the project GitHub repository.
 
 ## States
 
@@ -78,7 +81,7 @@ _None._ The page is fully static — no local or remote data dependencies.
 
 ## Navigation
 
-**In-links:** Footer "About" link (all pages); Settings "learn more" credential
+**In-links:** Home Footer "About" link; Settings "learn more" credential
 privacy link.
 
 **Out-links:**
@@ -93,7 +96,10 @@ than the viewport.
 
 ## Open Questions
 
-_None._
+- **About link placement.** Currently only the Home and About pages include a
+  Footer with the About link, so About is not reachable from most inner pages.
+  Decide whether to add a site-wide Footer to all pages or promote About to a
+  NavBar link before wireframing.[^4]
 
 ## References
 
@@ -104,3 +110,5 @@ _None._
       [`../INDEX.md`](../INDEX.md).
 [^3]: William Farish (scientist), Wikipedia —
       <https://en.wikipedia.org/wiki/William_Farish_(scientist)>.
+[^4]: INDEX.md — only Home and About include a Footer section in their layouts —
+      [`../INDEX.md`](../INDEX.md).
