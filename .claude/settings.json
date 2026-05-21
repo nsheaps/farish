@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "defaultMode": "bypassPermissions"
+  },
+  "extraKnownMarketplaces": {
+    "agents": {
+      "source": {
+        "source": "github",
+        "repo": "nsheaps/agents"
+      }
+    },
+    "ai-mktpl": {
+      "source": {
+        "source": "github",
+        "repo": "nsheaps/ai-mktpl"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "cron-utils@agents": true,
+    "task-utils@agents": true,
+    "shared-lib@ai-mktpl": true,
+    "dangerous-bypass@ai-mktpl": true,
+    "agentic-behavior@ai-mktpl": true,
+    "common-sense@ai-mktpl": true,
+    "deep-research@ai-mktpl": true,
+    "edit-utils@ai-mktpl": true,
+    "github@ai-mktpl": true,
+    "github-app@ai-mktpl": true,
+    "mise@ai-mktpl": true,
+    "scm-utils@ai-mktpl": true,
+    "sequential-thinking@ai-mktpl": true,
+    "hookify@claude-plugins-official": true,
+    "plugin-dev@claude-plugins-official": true
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
