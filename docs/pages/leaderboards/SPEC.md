@@ -42,6 +42,8 @@ flowchart TB
 
 ## Components
 
+- **NavBar** — site-wide navigation bar; links to Generate, Explore,
+  Leaderboards, My Library, and Settings.
 - **BoardTabs** — three tabs selecting the active ranking metric.
 - **TimeBucketSelector** — four toggle buttons (1W / 1M / 1Y / All); updates
   URL param on selection.

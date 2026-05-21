@@ -48,6 +48,8 @@ flowchart TB
 
 ## Components
 
+- **NavBar** — site-wide navigation bar; links to Generate, Explore,
+  Leaderboards, My Library, and Settings.
 - **NoKeyBanner** — inline banner shown when no API key is set; links to
   [`../settings/SPEC.md`](../settings/SPEC.md).
 - **PromptBar** — multiline text area with a Submit / Generate button; accepts

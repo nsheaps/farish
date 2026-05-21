@@ -42,6 +42,8 @@ flowchart TB
 
 ## Components
 
+- **NavBar** — site-wide navigation bar; links to Generate, Explore,
+  Leaderboards, My Library, and Settings.
 - **NotFoundIllustration** — an isometric or geometric graphic evoking the
   project's aesthetic; displays the numeral "404" or equivalent.
 - **NotFoundHeadline** — "Page not found" in the site's heading typeface.

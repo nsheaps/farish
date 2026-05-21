@@ -45,6 +45,8 @@ flowchart TB
 
 ## Components
 
+- **NavBar** — site-wide navigation bar; links to Generate, Explore,
+  Leaderboards, My Library, and Settings.
 - **LibraryHeader** — page title ("My Library"), sort dropdown, and a
   "Clear All" button that triggers a confirmation dialog.
 - **ModelGrid** — responsive card grid; switches to `EmptyState` when the

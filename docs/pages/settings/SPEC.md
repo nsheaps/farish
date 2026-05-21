@@ -47,6 +47,8 @@ flowchart TB
 
 ## Components
 
+- **NavBar** — site-wide navigation bar; links to Generate, Explore,
+  Leaderboards, My Library, and Settings.
 - **ConnectionStatus** — banner showing "Connected as \<name\>" (OAuth) or
   "API key set" (manual) or "Not connected".
 - **ConnectWithClaudeButton** — initiates the Claude OAuth flow.[^3]

@@ -48,6 +48,8 @@ flowchart TB
 
 ## Components
 
+- **NavBar** — site-wide navigation bar; links to Generate, Explore,
+  Leaderboards, My Library, and Settings.
 - **ProfileHeader** — avatar image, display name, username handle, join date,
   and a stats row (model count, average rating, total views).
 - **StatsBadge** — individual stat chip reused within ProfileHeader.
