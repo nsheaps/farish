@@ -67,12 +67,13 @@ rejected with 401 so ratings are tied to an identity.[^3]
 
 ## Errors
 
-| Status | Condition                          | Body                                            |
-|--------|------------------------------------|-------------------------------------------------|
-| 400    | `stars` missing or out of range    | `{ "error": "invalid_stars" }`                  |
-| 401    | Bearer token missing or invalid    | `{ "error": "unauthorized" }`                   |
-| 404    | Model not found or not public      | `{ "error": "model_not_found" }`                |
-| 500    | Unexpected server error            | `{ "error": "internal_error" }`                 |
+| Status | Condition                                   | Body                                            |
+|--------|---------------------------------------------|-------------------------------------------------|
+| 400    | `stars` missing or out of range             | `{ "error": "invalid_stars" }`                  |
+| 401    | Bearer token missing or invalid             | `{ "error": "unauthorized" }`                   |
+| 403    | Authenticated user is the model's author    | `{ "error": "self_rating_not_allowed" }`        |
+| 404    | Model not found or not public               | `{ "error": "model_not_found" }`                |
+| 500    | Unexpected server error                     | `{ "error": "internal_error" }`                 |
 
 ## Source Pages
 
@@ -82,9 +83,9 @@ rejected with 401 so ratings are tied to an identity.[^3]
 
 ## Open Questions
 
-- **Self-rating.** Should creators be able to rate their own models? Recommend
-  no — server should return 403 if `authorId` matches the token identity.
-  Deferred to implementation.[^4]
+- **Self-rating.** Creators may not rate their own models — the server returns
+  403 (`self_rating_not_allowed`) if the token identity matches the model's
+  `authorId`. See Errors table.[^4]
 - **Rating deletion.** No DELETE is defined here; a user who wants to "remove"
   their rating would need a separate endpoint or a convention (e.g. `stars: 0`).
   Deferred to implementation.
