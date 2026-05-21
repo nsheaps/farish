@@ -2,20 +2,36 @@
 /**
  * ModelDetailView — the farish Model Detail page.
  *
- * Step 31: layout matched to the wireframe in docs/pages/model-detail/wireframes/page.ascii.md
+ * Step 32: populated with mock data from @farish/mock-data so the page
+ * renders fully without a real backend.
+ *
+ * Layout:
  * - Left (~65%): 3D Viewer area (placeholder canvas) + ViewerControls overlay + ActionBar
- * - Right (~35%): PromptDisplay (VCard), ParamsDisplay (VExpansionPanel), MetadataPanel (VCard)
- * - ComingSoonOverlay: dismissible overlay for Rate and Share (backend-gated social actions)
+ * - Right (~35%): PromptDisplay, ParamsDisplay (collapsible), MetadataPanel
+ * - ComingSoonOverlay: dismissible overlay for Rate and Share (backend-gated)
  *
  * Spec: docs/pages/model-detail/SPEC.md
  * Tags: browser-only (viewer), backend (social actions).
  * Route: /m/:modelId
  */
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
+import { mockModelDetail } from '@farish/mock-data';
 
 const route = useRoute();
-const modelId = route.params['modelId'] as string;
+const modelId = (route.params['modelId'] as string) || 'mock-detail-1';
+
+/** Rich mock model data derived deterministically from the model ID. */
+const model = computed(() => mockModelDetail(modelId));
+
+/** Format an ISO date string as a human-readable date. */
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+}
 
 /** Which social action triggered the coming-soon overlay: 'rating' | 'sharing' | null */
 const comingSoonAction = ref<'rating' | 'sharing' | null>(null);
@@ -44,18 +60,34 @@ function dismissComingSoon() {
           style="min-height: 480px; position: relative;"
           data-testid="model-detail-viewer"
         >
-          <!-- Viewer canvas placeholder -->
-          <v-sheet
-            color="surface-variant"
+          <!-- Viewer canvas placeholder — uses mock thumbnail for visual context -->
+          <v-img
+            :src="model.thumbnailUrl"
+            :alt="model.title"
             height="480"
-            class="d-flex align-center justify-center"
+            cover
           >
-            <div class="text-center text-medium-emphasis">
-              <v-icon icon="mdi-cube-outline" size="80" class="mb-3" />
-              <p class="text-body-2">3D geometry renders here</p>
-              <p class="text-caption">orbit · pan · zoom interactive</p>
+            <template #placeholder>
+              <v-sheet
+                color="surface-variant"
+                height="480"
+                class="d-flex align-center justify-center"
+              >
+                <v-icon icon="mdi-cube-outline" size="80" color="primary" />
+              </v-sheet>
+            </template>
+            <!-- Overlay label -->
+            <div
+              class="d-flex align-center justify-center"
+              style="position: absolute; inset: 0; background: rgba(0,0,0,0.35);"
+            >
+              <div class="text-center text-white">
+                <v-icon icon="mdi-cube-outline" size="64" class="mb-2 opacity-80" />
+                <p class="text-body-2">Interactive 3D viewer</p>
+                <p class="text-caption opacity-70">orbit · pan · zoom (coming in step 34)</p>
+              </div>
             </div>
-          </v-sheet>
+          </v-img>
 
           <!-- Viewer Controls (overlaid VBtn group) -->
           <div
@@ -74,7 +106,7 @@ function dismissComingSoon() {
         <v-toolbar
           flat
           color="surface-variant"
-          class="px-4"
+          class="px-4 border-t"
           data-testid="model-detail-actions"
         >
           <v-btn
@@ -131,11 +163,14 @@ function dismissComingSoon() {
       <v-col cols="12" md="4">
         <div class="pa-4" data-testid="model-detail-info">
 
+          <!-- Model Title -->
+          <h1 class="text-h5 font-weight-bold mb-4">{{ model.title }}</h1>
+
           <!-- Prompt Display -->
           <v-card variant="outlined" class="mb-4 pa-4" data-testid="model-detail-prompt">
-            <p class="text-caption text-medium-emphasis mb-1">PROMPT</p>
+            <p class="text-caption text-medium-emphasis text-overline mb-2">Prompt</p>
             <p class="text-body-2">
-              "A futuristic spaceship with glowing engines, low-poly style"
+              "{{ model.prompt }}"
             </p>
           </v-card>
 
@@ -144,9 +179,9 @@ function dismissComingSoon() {
             <v-expansion-panel title="Generation Parameters">
               <v-expansion-panel-text>
                 <v-list density="compact">
-                  <v-list-item title="Resolution" subtitle="High" />
-                  <v-list-item title="Style" subtitle="Low-poly" />
-                  <v-list-item title="Complexity" subtitle="Medium" />
+                  <v-list-item :title="`${model.resolution}%`" subtitle="Resolution" />
+                  <v-list-item :title="model.style" subtitle="Style" />
+                  <v-list-item :title="`${model.complexity}%`" subtitle="Complexity" />
                 </v-list>
               </v-expansion-panel-text>
             </v-expansion-panel>
@@ -154,34 +189,40 @@ function dismissComingSoon() {
 
           <!-- Metadata Panel -->
           <v-card variant="outlined" class="pa-4" data-testid="model-detail-metadata">
-            <p class="text-caption text-medium-emphasis mb-3">METADATA</p>
+            <p class="text-caption text-medium-emphasis text-overline mb-3">Metadata</p>
             <v-list density="compact">
               <v-list-item>
                 <template #prepend>
                   <v-icon icon="mdi-account-circle-outline" size="20" class="mr-2" />
                 </template>
                 <v-list-item-title class="text-body-2">
-                  Author:
-                  <span class="text-primary">@alice</span>
+                  Author: <RouterLink :to="`/u/${model.author}`" class="text-primary text-decoration-none">@{{ model.author }}</RouterLink>
                 </v-list-item-title>
               </v-list-item>
               <v-list-item>
                 <template #prepend>
                   <v-icon icon="mdi-calendar-outline" size="20" class="mr-2" />
                 </template>
-                <v-list-item-title class="text-body-2">Created: Jan 12, 2026</v-list-item-title>
+                <v-list-item-title class="text-body-2">
+                  Created: {{ formatDate(model.createdAt) }}
+                </v-list-item-title>
               </v-list-item>
               <v-list-item>
                 <template #prepend>
                   <v-icon icon="mdi-eye-outline" size="20" class="mr-2" />
                 </template>
-                <v-list-item-title class="text-body-2">Views: 1,240</v-list-item-title>
+                <v-list-item-title class="text-body-2">
+                  Views: {{ model.views.toLocaleString() }}
+                </v-list-item-title>
               </v-list-item>
               <v-list-item>
                 <template #prepend>
                   <v-icon icon="mdi-star-outline" size="20" class="mr-2" />
                 </template>
-                <v-list-item-title class="text-body-2">Rating: 4.7 / 5 (83 ratings)</v-list-item-title>
+                <v-list-item-title class="text-body-2">
+                  Rating: {{ model.rating.toFixed(1) }} / 5
+                  <span class="text-medium-emphasis">({{ model.ratingCount }} ratings)</span>
+                </v-list-item-title>
               </v-list-item>
             </v-list>
           </v-card>
@@ -224,8 +265,8 @@ function dismissComingSoon() {
         </p>
         <v-btn
           variant="text"
-          @click="dismissComingSoon"
           data-testid="model-detail-coming-soon-continue"
+          @click="dismissComingSoon"
         >
           ✕ Continue viewing
         </v-btn>
