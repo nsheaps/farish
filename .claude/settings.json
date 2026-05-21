@@ -4,7 +4,6 @@
     "defaultMode": "bypassPermissions"
   },
   "env": {
-    "TASK_UTILS_REQUIRE_TASK": "0",
     "CLAUDE_CODE_ENABLE_TASKS": "1",
     "CLAUDE_CODE_ENABLE_BACKGROUND_PLUGIN_REFRESH": "1",
     "CLAUDE_AUTO_BACKGROUND_TASKS": "1",
