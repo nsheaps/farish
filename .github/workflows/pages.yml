@@ -165,6 +165,148 @@ jobs:
           git commit -m "chore(screenshots): publish run ${{ steps.stage.outputs.run_name }} [skip ci]"
           git push origin HEAD:${{ github.ref_name }}
 
+      # ── Failure diagnostics capture ──────────────────────────────────────────
+      # Runs ONLY when the job has already failed (any prior step).
+      # Collects every available diagnostic into ci-debug/<timestamp>-<run_id>/
+      # and commits + pushes to the PR branch with [skip ci] so it can be
+      # `git pull`-ed and read locally.
+      #
+      # Loop-safety analysis:
+      #   • `if: failure()` — this step is skipped on success; a successful run
+      #     never commits anything and never loops.
+      #   • `[skip ci]` in the commit message — GitHub natively skips all
+      #     push-triggered workflow runs whose head-commit message contains
+      #     `[skip ci]`, so the diagnostics push does NOT re-trigger this job.
+      #   • The step also exits early when `git diff --cached --quiet` (nothing
+      #     staged), providing a third independent guard.
+      #   • A diagnostics commit itself cannot fail (it never runs the screenshot
+      #     suite), so a failing diagnostics step cannot re-arm this step.
+      - name: Capture failure diagnostics and commit back [skip ci]
+        if: ${{ failure() }}
+        run: |
+          set +e  # keep going even if individual commands fail
+
+          TS="$(date -u +%Y%m%dT%H%M%SZ)"
+          RUN_ID="${{ github.run_id }}"
+          DEBUG_DIR="ci-debug/${TS}-${RUN_ID}"
+          mkdir -p "${DEBUG_DIR}"
+
+          echo "=== Diagnostics capture: ${DEBUG_DIR} ==="
+
+          # ── 1. Environment / versions ──────────────────────────────────────
+          {
+            echo "=== uname -a ==="
+            uname -a
+            echo ""
+            echo "=== node --version ==="
+            node --version 2>&1 || echo "(node not found)"
+            echo ""
+            echo "=== bun --version ==="
+            bun --version 2>&1 || echo "(bun not found)"
+            echo ""
+            echo "=== bunx playwright --version ==="
+            bunx playwright --version 2>&1 || echo "(playwright not found)"
+            echo ""
+            echo "=== df -h /dev/shm ==="
+            df -h /dev/shm 2>&1 || echo "(df failed)"
+            echo ""
+            echo "=== df -h / ==="
+            df -h / 2>&1
+            echo ""
+            echo "=== free -h ==="
+            free -h 2>&1 || echo "(free failed)"
+            echo ""
+            echo "=== env (filtered) ==="
+            env | grep -v -i 'token\|secret\|password\|key' | sort
+          } > "${DEBUG_DIR}/environment.txt" 2>&1
+
+          # ── 2. Playwright install output ───────────────────────────────────
+          # Re-run playwright install and capture stdout+stderr verbatim so we
+          # can see whether browser binaries or system deps are missing.
+          bun run --cwd apps/web playwright install --with-deps chromium \
+            > "${DEBUG_DIR}/playwright-install.txt" 2>&1 || true
+
+          # ── 3. Chromium binary / launch probe ─────────────────────────────
+          {
+            echo "=== Chromium binary location ==="
+            find ~/.cache/ms-playwright -name 'chrome' -o -name 'chromium' 2>/dev/null | head -20
+            echo ""
+            echo "=== Chromium executable probe ==="
+            CHROME_BIN="$(find ~/.cache/ms-playwright -name 'chrome' -type f 2>/dev/null | head -1)"
+            if [ -n "${CHROME_BIN}" ]; then
+              echo "Found: ${CHROME_BIN}"
+              "${CHROME_BIN}" --version 2>&1 || echo "(launch failed)"
+              "${CHROME_BIN}" --headless --disable-gpu --no-sandbox \
+                --dump-dom about:blank 2>&1 | head -30 || echo "(headless launch failed)"
+            else
+              echo "No chromium binary found in ~/.cache/ms-playwright"
+            fi
+            echo ""
+            echo "=== ldd chromium (shared lib deps) ==="
+            if [ -n "${CHROME_BIN}" ]; then
+              ldd "${CHROME_BIN}" 2>&1 | grep -i 'not found' || echo "(no missing libs)"
+            fi
+          } > "${DEBUG_DIR}/chromium-probe.txt" 2>&1
+
+          # ── 4. Playwright test results ─────────────────────────────────────
+          if [ -d apps/web/test-results ]; then
+            cp -r apps/web/test-results "${DEBUG_DIR}/test-results" 2>/dev/null || true
+          fi
+          if [ -d apps/web/playwright-report ]; then
+            cp -r apps/web/playwright-report "${DEBUG_DIR}/playwright-report" 2>/dev/null || true
+          fi
+          # Any loose trace/stderr txt files produced by Playwright
+          find apps/web -name '*.txt' -newer apps/web/package.json \
+            -not -path '*/node_modules/*' 2>/dev/null \
+            | head -50 | while read -r f; do
+                cp "$f" "${DEBUG_DIR}/" 2>/dev/null || true
+              done
+
+          # ── 5. Vite build / preview logs ──────────────────────────────────
+          # Replay the build step and capture output.
+          bun run --cwd apps/web build \
+            > "${DEBUG_DIR}/vite-build.txt" 2>&1 || true
+
+          # ── 6. Exact failing command repro ─────────────────────────────────
+          {
+            echo "=== Failing command ==="
+            echo "  bun run --cwd apps/web e2e"
+            echo ""
+            echo "=== Re-running with verbose output ==="
+            bun run --cwd apps/web e2e 2>&1 | tail -200
+          } > "${DEBUG_DIR}/e2e-repro.txt" 2>&1 || true
+
+          # ── 7. Manifest ────────────────────────────────────────────────────
+          {
+            echo "ci-debug collection: ${TS}-${RUN_ID}"
+            echo "github.ref:       ${{ github.ref }}"
+            echo "github.sha:       ${{ github.sha }}"
+            echo "github.run_id:    ${{ github.run_id }}"
+            echo "github.run_number:${{ github.run_number }}"
+            echo "github.actor:     ${{ github.actor }}"
+            echo ""
+            echo "=== Files collected ==="
+            find "${DEBUG_DIR}" -type f | sort
+          } > "${DEBUG_DIR}/MANIFEST.txt" 2>&1
+
+          # ── Commit and push ────────────────────────────────────────────────
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "${DEBUG_DIR}/"
+          if git diff --cached --quiet; then
+            echo "Nothing staged to commit (diagnostics directory is empty)."
+            exit 0
+          fi
+          git commit -m "ci(debug): screenshots failure diagnostics run ${RUN_ID} [skip ci]"
+
+          # Determine the branch to push to: on a pull_request event use
+          # github.head_ref (the PR branch); on a push event use github.ref_name.
+          PUSH_BRANCH="${{ github.head_ref || github.ref_name }}"
+          echo "Pushing diagnostics to branch: ${PUSH_BRANCH}"
+          git push origin HEAD:"${PUSH_BRANCH}"
+
+          echo "Diagnostics committed to ${DEBUG_DIR} on branch ${PUSH_BRANCH}."
+
   # ── Job 2: assemble ./_site and deploy it to GitHub Pages ─────────────────
   deploy:
     name: deploy-pages
