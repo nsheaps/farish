@@ -1,0 +1,18 @@
+// no-as-any.grit — custom Biome lint rule (GritQL plugin).
+//
+// Bans the `x as any` escape hatch anywhere in the farish codebase. `as any`
+// silently disables type-checking for an expression and is the single most
+// common way strictness is defeated. The built-in `noExplicitAny` rule catches
+// bare `any` annotations; this plugin closes the cast-shaped hole it leaves.
+//
+// Pattern we do NOT want:   const v = something as any;
+// Do this instead:         narrow with a type guard, or cast to `unknown`
+//                          first and then to a precise type.
+//
+// Docs: docs/monorepo/lint-format.md
+`$expr as any` where {
+  register_diagnostic(
+    span = $expr,
+    message = "farish/no-as-any: `as any` defeats type-checking — narrow the type or cast through `unknown` to a precise type instead."
+  )
+}
