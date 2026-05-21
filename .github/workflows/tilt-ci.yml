@@ -97,6 +97,15 @@ jobs:
       - name: Bootstrap (bun install)
         run: mise run bootstrap
 
+      # ── 6a. Expose workspace binaries to PATH ─────────────────────────────
+      # node_modules/.bin holds nx, biome, tsc, etc. mise adds it to PATH
+      # within mise-managed commands (via _.path in mise.toml), but tilt ci
+      # spawns local_resource processes outside of mise, so those processes
+      # cannot find nx unless we export the directory to GITHUB_PATH.
+      # This step runs after bootstrap so the directory exists.
+      - name: Add workspace binaries to PATH
+        run: echo "${{ github.workspace }}/node_modules/.bin" >> $GITHUB_PATH
+
       # ── 7. Run tilt ci ─────────────────────────────────────────────────────
       # `tilt ci` executes every resource in the Tiltfile in dependency order:
       #   1. deps-build — `nx run-many --target=build` (one-shot cmd)
