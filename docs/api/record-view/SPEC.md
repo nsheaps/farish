@@ -54,7 +54,10 @@ body to continue rendering the page.[^2]
 
 Optional — the endpoint accepts unauthenticated requests. If a valid bearer
 token is provided it is used for finer-grained deduplication; absence does
-not fail the request.[^3]
+not fail the request. An **invalid or expired** bearer token is silently
+ignored — the request falls back to unauthenticated (IP-based) deduplication
+rather than returning 401. This fire-and-forget design prevents view recording
+from blocking the page render.[^3]
 
 ## Errors
 
