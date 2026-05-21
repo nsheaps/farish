@@ -2,25 +2,38 @@
 /**
  * LeaderboardsComingSoonView — the Leaderboards page (Coming Soon).
  *
- * Step 31: ghost wireframe updated to match docs/pages/leaderboards/wireframes/page.ascii.md
- * The ghost shows: Board Tabs (Best Rated / Most Rated / Most Viewed),
- * Time Bucket Selector (1W / 1M / 1Y / All), Ranked Model List.
+ * Step 32: ghost entries populated from @farish/mock-data with realistic
+ * ratings and view counts.
+ *
+ * Ghost wireframe shows: Board Tabs, Time Bucket Selector, Ranked Model List.
  *
  * Spec: docs/pages/leaderboards/SPEC.md
  * Tag: backend — ships as Coming Soon until the shared backend is built.
  * Route: /leaderboards
  */
 import ComingSoon from '../components/ComingSoon.vue';
+import { mockModelSummaries } from '@farish/mock-data';
 
-const ghostEntries = [
-  { rank: 1, title: 'Crystalline Spire', author: '@alice', metric: '★★★★★  4.95', medal: 'mdi-medal' },
-  { rank: 2, title: 'Neon Octahedron', author: '@bob', metric: '★★★★★  4.91', medal: 'mdi-medal' },
-  { rank: 3, title: 'Organic Flow Sculpture', author: '@carol', metric: '★★★★☆  4.87', medal: 'mdi-medal' },
-  { rank: 4, title: 'Low-poly Dragon', author: '@dan', metric: '★★★★☆  4.82', medal: '' },
-  { rank: 5, title: 'Tessellated Sphere', author: '@eve', metric: '★★★★☆  4.79', medal: '' },
-  { rank: 6, title: 'Brutalist Tower', author: '@frank', metric: '★★★★☆  4.76', medal: '' },
-  { rank: 7, title: 'Floating Island', author: '@grace', metric: '★★★★☆  4.74', medal: '' },
-];
+const ghostModels = mockModelSummaries(10, 99);
+
+// Compute display ratings descending so #1 has highest
+const ghostEntries = ghostModels.map((m, i) => ({
+  rank: i + 1,
+  title: m.title,
+  author: m.author,
+  thumbnailUrl: m.thumbnailUrl,
+  rating: (5.0 - i * 0.04).toFixed(2),
+  views: m.views,
+  medal: i < 3,
+  medalColor:
+    i === 0
+      ? 'amber-darken-2'
+      : i === 1
+        ? 'grey-lighten-1'
+        : i === 2
+          ? 'brown-lighten-2'
+          : 'surface-variant',
+}));
 </script>
 
 <template>
@@ -60,20 +73,35 @@ const ghostEntries = [
         <v-list-item
           v-for="entry in ghostEntries"
           :key="entry.rank"
+          :data-testid="`ghost-rank-${entry.rank}`"
         >
           <template #prepend>
             <v-avatar
-              :color="entry.rank <= 3 ? (entry.rank === 1 ? 'amber-darken-2' : entry.rank === 2 ? 'grey-lighten-1' : 'brown-lighten-2') : 'surface-variant'"
+              :color="entry.medalColor"
               size="40"
               class="mr-3 text-body-2 font-weight-bold"
             >
               #{{ entry.rank }}
             </v-avatar>
           </template>
-          <v-list-item-title class="text-body-2 font-weight-medium">{{ entry.title }}</v-list-item-title>
-          <v-list-item-subtitle class="text-caption">{{ entry.author }}</v-list-item-subtitle>
+
+          <v-list-item-title class="text-body-2 font-weight-medium">
+            {{ entry.title }}
+          </v-list-item-title>
+          <v-list-item-subtitle class="text-caption">
+            @{{ entry.author }}
+          </v-list-item-subtitle>
+
           <template #append>
-            <span class="text-caption text-medium-emphasis">{{ entry.metric }}</span>
+            <div class="text-right">
+              <div class="d-flex align-center ga-1 text-caption text-amber-darken-2">
+                <v-icon icon="mdi-star" size="14" />
+                <span class="font-weight-medium">{{ entry.rating }}</span>
+              </div>
+              <div class="text-caption text-medium-emphasis">
+                {{ entry.views.toLocaleString() }} views
+              </div>
+            </div>
           </template>
         </v-list-item>
       </v-list>
