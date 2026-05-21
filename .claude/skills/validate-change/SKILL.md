@@ -25,6 +25,7 @@ right validation procedure for each type.
    | Changed path matches                              | Type   | Subskill                     |
    |---------------------------------------------------|--------|------------------------------|
    | `apps/`, `services/`, `lib/`, `packages/`        | code   | `validate-change-code`       |
+   | monorepo root config (`mise.toml`, `.mise/`, `nx.json`, `biome.json`, `.biome/`, `package.json`, `tsconfig*.json`, `.envrc`) | code | `validate-change-code` (run `mise run check`) |
    | `infra/`, `.github/settings.yml`, `renovate.json` | infra  | `validate-change-infra`      |
    | `.github/workflows/`                              | ci     | `validate-change-ci`         |
    | `docs/` (non-spec), root `*.md`                   | docs   | `validate-change-docs`       |
