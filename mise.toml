@@ -10,14 +10,17 @@
 # Note: `nx` is intentionally NOT a mise tool. It is a workspace devDependency
 # pinned in `bun.lock`, because the nx CLI version must stay in lockstep with
 # the `@nx/*` plugin versions resolved by bun. See docs/monorepo/nx.md.
+#
+# Note: `tilt` is also intentionally NOT a mise tool. It is needed only for the
+# local dev stack (`tilt up`), never for the lint/test/build gate. Listing it
+# in `[tools]` would make every `mise run` task resolve it over the GitHub API,
+# coupling the CI gate to a dev-only orchestration tool. Install instructions
+# are in docs/monorepo/tilt.md.
 
 [tools]
 bun = "1.3.11"
 node = "22.22.2"
 direnv = "latest"
-# Tilt orchestrates the local dev stack (API server + Vue dev server) as native
-# processes — no containers. See the repo `Tiltfile` and docs/monorepo/tilt.md.
-"aqua:tilt-dev/tilt" = "0.35.2"
 
 [env]
 # Put workspace-local binaries (nx, biome, tsc) on PATH for every shell.

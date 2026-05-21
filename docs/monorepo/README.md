@@ -78,11 +78,20 @@ mise run check          # lint + test + build — the CI gate
 | `mise run build`     | `tsc` build across every package (in dep order)  |
 | `mise run check`     | lint + test + build — the full validation gate   |
 | `mise run graph`     | Dump the nx project graph to `.nx-graph.json`    |
+| `mise run dev`       | Bring up the local dev stack (API + web) via Tilt |
 
 ## Repository folder structure
 
 See [folder-structure.md](./folder-structure.md) for the package-type layout
 (`services/`, `apps/`, `lib/`, `packages/`, `plugins/`, `infra/`).
+
+## App framework
+
+The app framework skeleton — the API server, the Vue browser app, the Coming
+Soon mechanism, and how they run together — is described in
+[app-framework.md](./app-framework.md). Local orchestration is
+[tilt.md](./tilt.md); container publishing is
+[infra/ghcr.md](../../infra/ghcr.md).
 
 ## Per-package contract
 

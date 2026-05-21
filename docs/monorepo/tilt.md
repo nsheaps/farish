@@ -19,6 +19,27 @@ Container images exist only for **publishing** the API service — see
 [`infra/ghcr.md`](../../infra/ghcr.md). Those images are never used for local
 dev.
 
+## Installing Tilt
+
+Tilt is **not** pinned in [`mise.toml`](../../mise.toml). Like `nx`, it is
+deliberately excluded from `[tools]`: it is needed only for the local dev
+stack, never for the `lint` / `test` / `build` gate, and listing it would make
+every `mise run` task resolve it over the GitHub API — coupling the CI gate to
+a dev-only tool. Install it once per machine:
+
+```sh
+# Official install script (Linux/macOS):
+curl -fsSL https://raw.githubusercontent.com/tilt-dev/tilt/master/scripts/install.sh | bash
+
+# or via mise, on demand (not pinned in the repo):
+mise use -g aqua:tilt-dev/tilt@0.35.2
+
+# or your OS package manager (e.g. `brew install tilt-dev/tap/tilt`).
+```
+
+The `tilt ci` workflow added in a later prompt step installs Tilt itself as
+part of that workflow.
+
 ## Usage
 
 ```sh
@@ -27,10 +48,6 @@ mise run dev      # → tilt up
 tilt up           # starts the stack + opens the Tilt UI
 tilt down         # stops every resource
 ```
-
-`tilt` itself is pinned in [`mise.toml`](../../mise.toml)
-(`aqua:tilt-dev/tilt`), so `mise install` provides it at the same version for
-everyone.
 
 ## Resources
 
@@ -73,7 +90,7 @@ prompt step (step 27).
 ## See also
 
 - [`Tiltfile`](../../Tiltfile) — the orchestration definition.
-- [mise.md](./mise.md) — how `tilt` is pinned and the `dev` task.
+- [mise.md](./mise.md) — the `dev` task and why `tilt` is not in `[tools]`.
 - [infra/ghcr.md](../../infra/ghcr.md) — container publishing (separate from dev).
 
 [tilt]: https://tilt.dev
