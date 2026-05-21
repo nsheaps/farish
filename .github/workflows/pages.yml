@@ -101,6 +101,13 @@ jobs:
         id: bootstrap
         run: mise run bootstrap
 
+      # node_modules/.bin holds nx (a workspace devDependency). jdx/mise-action
+      # exports PATH before `bun install` creates node_modules, so the raw
+      # `nx run web:e2e` step below cannot find nx unless this directory is
+      # exported to $GITHUB_PATH explicitly (same fix as tilt-ci.yml).
+      - name: Put node_modules/.bin on PATH
+        run: echo "${{ github.workspace }}/node_modules/.bin" >> "$GITHUB_PATH"
+
       # Cache the Playwright Chromium browser binary.
       # Key: runner OS + bun.lock hash — ensures a cache miss whenever any dep
       # changes (which may bump the playwright browser revision).
@@ -364,6 +371,12 @@ jobs:
 
       - name: Bootstrap (bun install)
         run: mise run bootstrap
+
+      # node_modules/.bin holds nx; export it so the raw `nx run web:build`
+      # step below resolves (jdx/mise-action exports PATH before node_modules
+      # exists). Same fix as tilt-ci.yml and the screenshots job above.
+      - name: Put node_modules/.bin on PATH
+        run: echo "${{ github.workspace }}/node_modules/.bin" >> "$GITHUB_PATH"
 
       # Build the app — `pages-site` copies apps/web/dist into the site root.
       - name: Build app
