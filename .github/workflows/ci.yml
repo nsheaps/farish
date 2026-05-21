@@ -1,0 +1,94 @@
+# ci.yml — monorepo lint + test + build CI gate.
+#
+# Runs the SAME command a developer runs locally: `mise run check`.
+# This satisfies initial-prompt step 24 — local and CI codepaths never diverge.
+#
+# Amendment A5 dry-run: on pull-request events, CI_DRY_RUN=true is set
+# automatically. This lets the workflow be exercised on the dev branch
+# (PR #1) before it reaches main. The dry-run only adds a notice; the
+# full check still runs (lint + test + build are safe, non-destructive).
+#
+# Off-the-shelf actions used (per initial prompt step 22):
+#   - actions/checkout@v4    — standard repo checkout
+#   - jdx/mise-action@v2     — installs mise + pinned tools from mise.toml
+#   - actions/cache@v4       — caches .nx/cache for task-result reuse
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    # Default activity types (opened, synchronize, reopened) all fire for
+    # draft PRs — no additional filtering needed.
+    # ready_for_review is included explicitly so converting a draft also
+    # triggers a fresh CI run.
+    types: [opened, synchronize, reopened, ready_for_review]
+
+# Automatically compute the dry-run flag from the event type (A5).
+# On pull_request events: CI_DRY_RUN=true  (pre-merge validation).
+# On push to main:        CI_DRY_RUN=false (production gate).
+env:
+  CI_DRY_RUN: ${{ github.event_name == 'pull_request' && 'true' || 'false' }}
+
+jobs:
+  check:
+    name: check
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1. Checkout ────────────────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # fetch-depth: 0 fetches all history so nx affected (future) can
+          # compare against any base SHA. Has no cost for --all runs.
+          fetch-depth: 0
+
+      # ── 2. Dry-run notice (A5) ─────────────────────────────────────────────
+      - name: Dry-run notice
+        if: env.CI_DRY_RUN == 'true'
+        run: |
+          echo "::notice::CI_DRY_RUN=true — running monorepo check in dry-run mode (PR build)."
+          echo "All steps execute normally; no irreversible side-effects in this workflow."
+
+      # ── 3. Install toolchain (mise) ────────────────────────────────────────
+      # jdx/mise-action reads mise.toml, installs bun + node + direnv at
+      # their pinned versions, and adds mise's shims to PATH.
+      # The action's own caching is enabled (cache: true) so tool downloads
+      # are skipped on repeat runs.
+      - name: Install toolchain via mise
+        uses: jdx/mise-action@v2
+        with:
+          cache: true
+          experimental: true
+
+      # ── 4. Cache nx task results ───────────────────────────────────────────
+      # .nx/cache is nx's content-addressed task cache. Restoring it lets nx
+      # skip tasks whose inputs are identical to a previous run.
+      #
+      # Key strategy:
+      #   Exact key: OS + bun.lock hash  (hits when deps haven't changed)
+      #   Restore keys: OS only           (partial hit on dep upgrades — nx
+      #                                    still benefits from unchanged tasks)
+      - name: Cache nx task results
+        uses: actions/cache@v4
+        with:
+          path: .nx/cache
+          key: nx-cache-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            nx-cache-${{ runner.os }}-
+
+      # ── 5. Install workspace dependencies ─────────────────────────────────
+      # mise run bootstrap → .mise/tasks/bootstrap.sh → bun install
+      # --frozen-lockfile is set when CI=true (see bootstrap.sh) to prevent
+      # accidental lockfile modifications in CI.
+      - name: Bootstrap (bun install)
+        run: mise run bootstrap
+
+      # ── 6. Full validation gate ────────────────────────────────────────────
+      # mise run check → .mise/tasks/check.sh → nx lint + test + build (--all)
+      # Identical to what a developer runs locally.
+      - name: Check (lint + test + build)
+        run: mise run check

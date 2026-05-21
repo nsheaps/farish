@@ -1,0 +1,17 @@
+{
+  "name": "@farish/echo-service",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Dummy service — a long-running HTTP server. Exercises the nx graph as a service node.",
+  "type": "module",
+  "scripts": {
+    "lint": "biome lint ./src",
+    "format": "biome check --write ./src",
+    "test": "bun test",
+    "build": "tsc -p tsconfig.json",
+    "start": "bun run src/server.ts"
+  },
+  "dependencies": {
+    "@farish/core": "workspace:*"
+  }
+}

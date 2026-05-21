@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "//": "Type-checking config for the Playwright e2e suite. Separate from the app tsconfig because the suite runs in Node (uses __dirname, node:fs) rather than the browser. Not part of the root tsc solution — Playwright compiles its own specs.",
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022"],
+    "types": ["node"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "composite": false
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["output", "node_modules"]
+}
