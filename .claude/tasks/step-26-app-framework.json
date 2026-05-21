@@ -1,6 +1,6 @@
 {
   "id": "step-26-app-framework",
   "subject": "step 26: build the app framework skeleton (API server, Vue app, Tilt, coming-soon)",
-  "status": "in_progress",
-  "description": "Build the FRAMEWORK + one working example for step 26: a microservice API server under services/api (bootstrap, router, health endpoint, one example endpoint stub), a Vue 3 + Vuetify 3 browser app under apps/web (Vite dev + static GH Pages build), a reusable coming-soon mechanism with mock-data generators, a Tiltfile using local_resource (native processes, no containers), a basic end-to-end example with tests, and a ghcr.io publishing target. Supporting leaf libs: lib/api-contract (shared types), lib/mock-data (lorem + placeholder image generators). NOT the 11 actual pages (steps 30-32), NOT the tilt ci workflow (step 27)."
+  "status": "completed",
+  "description": "Built the FRAMEWORK + one working example for step 26. Delivered: @farish/api microservice API server (router, /health, GET /models example stub); @farish/web Vue 3 + Vuetify browser app (Vite dev + static GitHub Pages build); reusable ComingSoon mechanism with @farish/mock-data lorem/placeholder generators (worked example: ExploreComingSoonView); @farish/api-contract shared-types lib; Tiltfile orchestrating api + web as native processes (no containers); ghcr.io publishing target (Dockerfile + gated release script). 46 automated tests pass; mise run check green across 9 nx projects. HomeView calls the API end-to-end. NOT built: the 11 actual pages (steps 30-32), the tilt ci workflow (step 27)."
 }
