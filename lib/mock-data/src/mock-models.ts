@@ -33,8 +33,8 @@ export function mockModelSummaries(count: number, seed = 1): ModelSummary[] {
       id: `mock-${String(seed)}-${String(index)}`,
       title: lorem.title(3),
       author: lorem.words(1),
-      // A repeatable-looking 0–5 rating and view count derived from the index.
-      rating: 2 + ((index * 7) % 7) / 2,
+      // A repeatable-looking 2.5–5 rating and view count derived from the index.
+      rating: 2.5 + ((index * 3) % 6) / 2,
       views: 100 + ((index * 137) % 9900),
       thumbnailUrl: placeholderImageUrl({
         width: 320,
