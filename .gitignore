@@ -7,6 +7,9 @@
 # Sub-agent git worktrees (local working areas, never committed)
 .claude/worktrees/
 
+# Claude Code — hook sidecar logs (disposable runtime logs)
+.claude/logs/
+
 # --- Monorepo (steps 22-23) ---------------------------------------------------
 
 # Dependencies
