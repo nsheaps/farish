@@ -100,9 +100,27 @@ jobs:
       - name: Bootstrap (bun install)
         run: mise run bootstrap
 
+      # Cache the Playwright Chromium browser binary.
+      # Key: runner OS + bun.lock hash — ensures a cache miss whenever any dep
+      # changes (which may bump the playwright browser revision).
+      # Note: system deps (libnss3 etc.) are NOT cached — they are installed
+      # via apt by `--with-deps` on every run. The Playwright docs explicitly
+      # advise against caching them because the set of required packages can
+      # change between apt mirrors and runner OS versions.
+      - name: Cache Playwright browser binaries
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-browsers-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+
       # Playwright needs its browser binaries + OS deps; the npm package alone
       # is not enough. --with-deps installs the apt packages chromium needs.
-      - name: Install Playwright browsers
+      # Run this step unconditionally — even on a cache hit the system deps
+      # must be installed (they are not cached). `playwright install` skips the
+      # browser download when the binary already exists in the cache; the
+      # --with-deps flag only re-runs the apt install portion.
+      - name: Install Playwright browsers (+ system deps)
         run: bun run --cwd apps/web playwright install --with-deps chromium
 
       # Build the app, then run the screenshot suite against the production
