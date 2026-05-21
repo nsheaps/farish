@@ -58,3 +58,8 @@ run = "nx graph --file=.nx-graph.json && echo 'Wrote .nx-graph.json'"
 description = "Bring up the local dev stack (API + web) with Tilt."
 run = "tilt up"
 
+[tasks.pages-site]
+description = "Assemble the GitHub Pages site (app + rendered docs + screenshots) into ./_site."
+# Glue script — see scripts/README.md. Requires `nx run web:build` to have run first.
+run = "bun run scripts/build-pages-site.ts _site"
+
