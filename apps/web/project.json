@@ -1,0 +1,15 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "web",
+  "projectType": "application",
+  "sourceRoot": "apps/web/src",
+  "tags": ["scope:app"],
+  "//": "Build/test go through vite + vitest (Vue SFCs are not plain TS), so the targets run package.json scripts via nx:run-script — identical executor to every other package. The `e2e` target runs the Playwright screenshot suite; it is intentionally NOT part of `mise run check` (it needs browsers + a served build) — the CI screenshot workflow invokes it directly.",
+  "targets": {
+    "lint": { "executor": "nx:run-script", "options": { "script": "lint" } },
+    "format": { "executor": "nx:run-script", "options": { "script": "format" } },
+    "test": { "executor": "nx:run-script", "options": { "script": "test" } },
+    "build": { "executor": "nx:run-script", "options": { "script": "build" } },
+    "e2e": { "executor": "nx:run-script", "options": { "script": "e2e" } }
+  }
+}

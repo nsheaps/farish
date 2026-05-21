@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin.json",
+  "name": "farish-dx",
+  "version": "0.0.0",
+  "description": "Developer-experience helpers for working in the farish monorepo.",
+  "author": {
+    "name": "farish"
+  }
+}
