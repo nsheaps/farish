@@ -28,12 +28,15 @@
 # commit message contains `[skip ci]`/`[no ci]`). The step also no-ops when
 # there is no screenshot diff. Two independent guards => no infinite loop.
 #
-# Off-the-shelf actions only, all pinned (initial prompt step 22):
+# Off-the-shelf actions only, all pinned (initial prompt step 22). Versions
+# match GitHub's official Pages starter workflow (actions/starter-workflows
+# pages/static.yml) — that combo is the canonical, known-good pairing:
 #   - actions/checkout@v4              — repo checkout
 #   - jdx/mise-action@v2               — installs bun + node from mise.toml
 #   - actions/cache@v4                 — caches .nx/cache
-#   - actions/upload-pages-artifact@v4 — packages ./_site as a Pages artifact
-#   - actions/deploy-pages@v4          — official GitHub Pages deployment
+#   - actions/configure-pages@v5       — configures (+ auto-enables) Pages
+#   - actions/upload-pages-artifact@v3 — packages ./_site as a Pages artifact
+#   - actions/deploy-pages@v5          — official GitHub Pages deployment
 # Playwright browsers are installed with `playwright install --with-deps`
 # (the project pins @playwright/test in bun.lock — no separate setup action).
 
@@ -349,19 +352,25 @@ jobs:
       # Check out the branch HEAD. On push events use ref_name (branch name);
       # on pull_request events use head_ref (the PR source branch) so we get
       # the actual app code rather than the merge-ref.
+      # Every step carries an `id:` so the failure-diagnostics step below can
+      # name the exact failing step via ${{ toJSON(steps) }} — without ids a
+      # step's outcome does not appear in the `steps` context.
       - name: Checkout (post-commit-back)
+        id: checkout
         uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref || github.ref_name }}
           fetch-depth: 0
 
       - name: Install toolchain via mise
+        id: mise
         uses: jdx/mise-action@v2
         with:
           cache: true
           experimental: true
 
       - name: Cache nx task results
+        id: cache-nx
         uses: actions/cache@v4
         with:
           path: .nx/cache
@@ -370,41 +379,50 @@ jobs:
             nx-cache-${{ runner.os }}-
 
       - name: Bootstrap (bun install)
+        id: bootstrap
         run: mise run bootstrap
 
       # node_modules/.bin holds nx; export it so the raw `nx run web:build`
       # step below resolves (jdx/mise-action exports PATH before node_modules
       # exists). Same fix as tilt-ci.yml and the screenshots job above.
       - name: Put node_modules/.bin on PATH
+        id: path
         run: echo "${{ github.workspace }}/node_modules/.bin" >> "$GITHUB_PATH"
 
       # Build the app — `pages-site` copies apps/web/dist into the site root.
       - name: Build app
+        id: build
         run: nx run web:build
 
       # Assemble ./_site: built app + docs/**.md rendered to HTML (Mermaid,
       # A6) + every committed screenshot run. The SAME mise task a developer
       # runs locally (step 24).
       - name: Assemble Pages site
+        id: assemble
         run: mise run pages-site
 
       - name: Configure GitHub Pages
+        id: configure
         uses: actions/configure-pages@v5
         with:
           # Auto-enable GitHub Pages (source = GitHub Actions) on the first
           # deploy — the repo's Pages setting is likely not turned on yet.
           enablement: true
 
-      # Package ./_site as the Pages artifact.
+      # Package ./_site as the Pages artifact. Pinned to @v3 to match GitHub's
+      # official Pages starter workflow — @v3 is the version paired with
+      # deploy-pages@v5 (the @v4 + deploy-pages@v4 combo previously used here
+      # is not the canonical pairing and was failing the deploy job).
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v4
+        id: upload
+        uses: actions/upload-pages-artifact@v3
         with:
           path: _site
 
-      # Official GitHub Pages deployment.
+      # Official GitHub Pages deployment. @v5 matches the starter workflow.
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
 
       # Failure diagnostics for the deploy job — commits step outcomes + info
       # to ci-debug/ so a deploy failure is readable without GitHub API access.
@@ -422,9 +440,24 @@ jobs:
             echo "job: deploy-pages"
             echo "run_id:  ${{ github.run_id }}"
             echo "sha:     ${{ github.sha }}"
+            echo "event:   ${{ github.event_name }}"
+            echo "ref:     ${{ github.ref }}"
+            echo "head_ref:${{ github.head_ref }}"
             echo "=== _site listing ==="
             ls -laR _site 2>&1 | head -60
           } > "${DEBUG_DIR}/deploy-info.txt" 2>&1
+          # Probe the Pages API: is Pages enabled, and how is it sourced?
+          #   HTTP 404 => Pages not enabled (configure-pages enablement failed)
+          #   HTTP 200 + build_type=workflow => OK (Actions-sourced)
+          #   HTTP 200 + build_type=legacy   => branch-sourced (conflicts)
+          #   HTTP 403 => token/plan cannot manage Pages
+          curl -sS -o "${DEBUG_DIR}/pages-api.json" \
+            -w 'HTTP %{http_code}\n' \
+            -H "Authorization: Bearer ${{ github.token }}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${{ github.repository }}/pages" \
+            > "${DEBUG_DIR}/pages-api-status.txt" 2>&1
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "${DEBUG_DIR}/"
