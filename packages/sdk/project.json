@@ -1,0 +1,18 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "sdk",
+  "projectType": "library",
+  "sourceRoot": "packages/sdk/src",
+  "tags": ["scope:package"],
+  "targets": {
+    "lint": { "executor": "nx:run-script", "options": { "script": "lint" } },
+    "format": { "executor": "nx:run-script", "options": { "script": "format" } },
+    "test": { "executor": "nx:run-script", "options": { "script": "test" } },
+    "build": { "executor": "nx:run-script", "options": { "script": "build" } },
+    "release": {
+      "executor": "nx:run-script",
+      "dependsOn": ["build"],
+      "options": { "script": "release" }
+    }
+  }
+}
