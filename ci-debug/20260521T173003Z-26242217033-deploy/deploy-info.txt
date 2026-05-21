@@ -1,0 +1,64 @@
+job: deploy-pages
+run_id:  26242217033
+sha:     3bc2228bd172eb6f738f563cb2f995d92220518c
+=== _site listing ===
+_site:
+total 24
+drwxr-xr-x  5 runner runner 4096 May 21 17:30 .
+drwxr-xr-x 19 runner runner 4096 May 21 17:30 ..
+drwxr-xr-x  2 runner runner 4096 May 21 17:30 assets
+drwxr-xr-x  7 runner runner 4096 May 21 17:30 docs
+-rw-r--r--  1 runner runner  416 May 21 17:30 index.html
+drwxr-xr-x  2 runner runner 4096 May 21 17:30 screenshots
+
+_site/assets:
+total 4596
+drwxr-xr-x 2 runner runner    4096 May 21 17:30 .
+drwxr-xr-x 5 runner runner    4096 May 21 17:30 ..
+-rw-r--r-- 1 runner runner  664257 May 21 17:30 index-CKsCfv5j.css
+-rw-r--r-- 1 runner runner  410532 May 21 17:30 index-DZAI1gHK.js
+-rw-r--r-- 1 runner runner 1307660 May 21 17:30 materialdesignicons-webfont-B7mPwVP_.ttf
+-rw-r--r-- 1 runner runner 1307880 May 21 17:30 materialdesignicons-webfont-CSr8KVlo.eot
+-rw-r--r-- 1 runner runner  403216 May 21 17:30 materialdesignicons-webfont-Dp5v-WZN.woff2
+-rw-r--r-- 1 runner runner  587984 May 21 17:30 materialdesignicons-webfont-PXm3-2wK.woff
+
+_site/docs:
+total 72
+drwxr-xr-x  7 runner runner  4096 May 21 17:30 .
+drwxr-xr-x  5 runner runner  4096 May 21 17:30 ..
+-rw-r--r--  1 runner runner 29457 May 21 17:30 INITIAL_PROMPT.html
+drwxr-xr-x 10 runner runner  4096 May 21 17:30 api
+-rw-r--r--  1 runner runner  8200 May 21 17:30 index.html
+drwxr-xr-x  2 runner runner  4096 May 21 17:30 monorepo
+drwxr-xr-x 13 runner runner  4096 May 21 17:30 pages
+drwxr-xr-x  2 runner runner  4096 May 21 17:30 research
+drwxr-xr-x  2 runner runner  4096 May 21 17:30 screenshots
+
+_site/docs/api:
+total 52
+drwxr-xr-x 10 runner runner  4096 May 21 17:30 .
+drwxr-xr-x  7 runner runner  4096 May 21 17:30 ..
+-rw-r--r--  1 runner runner 11210 May 21 17:30 API-SPEC.html
+drwxr-xr-x  2 runner runner  4096 May 21 17:30 create-model
+drwxr-xr-x  2 runner runner  4096 May 21 17:30 get-leaderboard
+drwxr-xr-x  2 runner runner  4096 May 21 17:30 get-model
+drwxr-xr-x  2 runner runner  4096 May 21 17:30 get-user-profile
+drwxr-xr-x  2 runner runner  4096 May 21 17:30 list-models
+drwxr-xr-x  2 runner runner  4096 May 21 17:30 list-user-models
+drwxr-xr-x  2 runner runner  4096 May 21 17:30 record-view
+drwxr-xr-x  2 runner runner  4096 May 21 17:30 submit-rating
+
+_site/docs/api/create-model:
+total 16
+drwxr-xr-x  2 runner runner 4096 May 21 17:30 .
+drwxr-xr-x 10 runner runner 4096 May 21 17:30 ..
+-rw-r--r--  1 runner runner 6743 May 21 17:30 SPEC.html
+
+_site/docs/api/get-leaderboard:
+total 16
+drwxr-xr-x  2 runner runner 4096 May 21 17:30 .
+drwxr-xr-x 10 runner runner 4096 May 21 17:30 ..
+-rw-r--r--  1 runner runner 6350 May 21 17:30 SPEC.html
+
+_site/docs/api/get-model:
+total 16
