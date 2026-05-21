@@ -1,0 +1,14 @@
+ci-debug collection: 20260521T165633Z-26240484976
+github.ref:       refs/pull/1/merge
+github.sha:       d0350800dd2a9c5d835cc7db5a209cdf24d42e1c
+github.run_id:    26240484976
+github.run_number:11
+github.actor:     nsheaps
+
+=== Files collected ===
+ci-debug/20260521T165633Z-26240484976/MANIFEST.txt
+ci-debug/20260521T165633Z-26240484976/chromium-probe.txt
+ci-debug/20260521T165633Z-26240484976/e2e-repro.txt
+ci-debug/20260521T165633Z-26240484976/environment.txt
+ci-debug/20260521T165633Z-26240484976/playwright-install.txt
+ci-debug/20260521T165633Z-26240484976/vite-build.txt

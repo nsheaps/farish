@@ -1,0 +1,13 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "echo-service",
+  "projectType": "application",
+  "sourceRoot": "services/echo-service/src",
+  "tags": ["scope:service"],
+  "targets": {
+    "lint": { "executor": "nx:run-script", "options": { "script": "lint" } },
+    "format": { "executor": "nx:run-script", "options": { "script": "format" } },
+    "test": { "executor": "nx:run-script", "options": { "script": "test" } },
+    "build": { "executor": "nx:run-script", "options": { "script": "build" } }
+  }
+}

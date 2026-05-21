@@ -1,0 +1,59 @@
+# .github/settings.yml — repository configuration as code.
+#
+# Managed by the repository-settings GitHub App[^repo-settings].
+# Changes merged to main are automatically synced to GitHub.
+# Affects amendment A1 (repo config as code) and A5 (CI dry-run gating).
+#
+# [^repo-settings]: https://github.com/repository-settings/app
+#
+# Amendment A5 — dry-run mode:
+#   The CI workflow computes CI_DRY_RUN automatically from the GitHub event
+#   type (pull_request → true, push to main → false). No repository variable
+#   is required; the value is derived from the event context in ci.yml.
+#   The branch protection below enforces that the `check` job must pass on
+#   the PR before merging, which is how A5's "dry-run validates before main"
+#   contract is enforced.
+
+repository:
+  # Basic repo metadata
+  name: farish
+  description: >-
+    Browser-based AI 3D-model generator — named after William Farish, who
+    formalised isometric projection in 1822.
+  homepage: ""
+  private: false
+  has_issues: true
+  has_projects: false
+  has_wiki: false
+
+  # Merge strategy: squash-only keeps a linear history.
+  allow_squash_merge: true
+  allow_merge_commit: false
+  allow_rebase_merge: false
+  squash_merge_commit_title: PR_TITLE
+  squash_merge_commit_message: PR_BODY
+
+  # Hygiene
+  delete_branch_on_merge: true
+  allow_auto_merge: false
+
+# Branch protection for main.
+#
+# required_status_checks.contexts must match the GitHub Actions check name
+# exactly. For a workflow named "CI" with job id "check", GitHub reports the
+# check as "check". Verify after the first CI run and update if needed.
+branches:
+  - name: main
+    protection:
+      required_status_checks:
+        # Require the branch to be up-to-date before merging.
+        strict: true
+        # The check name matches the job `name: check` in ci.yml.
+        # If GitHub reports it as "CI / check", update this value.
+        contexts:
+          - check
+      enforce_admins: false
+      # No required reviews for now — bot-authored PRs can merge once CI green.
+      required_pull_request_reviews: null
+      # No push restrictions — any collaborator may push.
+      restrictions: null
