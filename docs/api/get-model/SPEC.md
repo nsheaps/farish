@@ -56,8 +56,9 @@ REST — single request-response fetch of a known resource by identifier.[^2]
 | `params`       | object  | no       | Generation params: `resolution`, `style`, `complexity`. |
 | `geometryUrl`  | string  | no       | URL to the GLB geometry file.[^3]                 |
 | `thumbnailUrl` | string  | yes      | URL to the preview thumbnail image.               |
-| `authorName`   | string  | no       | Display name of the creator.                      |
-| `authorId`     | string  | no       | Creator identifier (username or UUID).            |
+| `authorName`    | string  | no       | Display name of the creator.                                    |
+| `authorId`      | UUID    | no       | Creator's internal UUID.                                        |
+| `authorUsername`| string  | no       | Creator's public username handle (used to build `/u/:username` profile links). |
 | `createdAt`    | string  | no       | ISO 8601 creation timestamp.                      |
 | `viewCount`    | integer | no       | Total view count.                                 |
 | `ratingAvg`    | number  | yes      | Average star rating (1–5); null if no ratings.    |

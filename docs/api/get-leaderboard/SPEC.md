@@ -62,8 +62,9 @@ Each item in `items`:
 | `id`          | UUID    | no       | Unique model identifier.                                       |
 | `title`       | string  | no       | Model title.                                                   |
 | `thumbnailUrl`| string  | yes      | URL to the preview thumbnail.                                  |
-| `authorName`  | string  | no       | Creator display name.                                          |
-| `authorId`    | string  | no       | Creator identifier (username or UUID).                         |
+| `authorName`    | string  | no       | Creator display name.                                                   |
+| `authorId`      | UUID    | no       | Creator's internal UUID.                                                |
+| `authorUsername`| string  | no       | Creator's public username handle (used to build `/u/:username` profile links). |
 | `metricValue` | number  | no       | Board metric value: avg rating, rating count, or view count.   |
 | `createdAt`   | string  | no       | ISO 8601 creation timestamp (for tie-break display).           |
 

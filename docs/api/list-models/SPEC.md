@@ -38,7 +38,7 @@ pagination; no server-push needed.[^2]
 |----------|----------|----------|------------------------------------------------------------------|
 | `q`      | string   | no       | Full-text search over title and prompt.                         |
 | `sort`   | string   | no       | `newest` \| `rating` \| `popular` \| `views`. Default: `newest`. |
-| `filter` | string[] | no       | Tag/category slugs to AND-filter by.                            |
+| `filter` | string[] | no       | Tag/category slugs to AND-filter by. Serialised as repeated params: `?filter=tag1&filter=tag2`. |
 | `page`   | integer  | no       | 1-based page number. Default: `1`.                              |
 | `limit`  | integer  | no       | Results per page. Default: `24`; max: `100`.                    |
 
@@ -61,14 +61,15 @@ Each item in `items`:
 
 | Field         | Type    | Nullable | Description                              |
 |---------------|---------|----------|------------------------------------------|
-| `id`          | UUID    | no       | Unique model identifier.                 |
-| `title`       | string  | no       | Model title.                             |
-| `thumbnailUrl`| string  | yes      | URL to the model thumbnail image.        |
-| `authorName`  | string  | no       | Display name of the creator.             |
-| `authorId`    | string  | no       | Creator identifier (username or UUID).   |
-| `ratingAvg`   | number  | yes      | Average star rating (1–5); null if none. |
-| `viewCount`   | integer | no       | Total view count.                        |
-| `createdAt`   | string  | no       | ISO 8601 creation timestamp.             |
+| `id`            | UUID    | no       | Unique model identifier.                        |
+| `title`         | string  | no       | Model title.                                    |
+| `thumbnailUrl`  | string  | yes      | URL to the model thumbnail image.               |
+| `authorName`    | string  | no       | Display name of the creator.                    |
+| `authorId`      | UUID    | no       | Creator's internal UUID.                        |
+| `authorUsername`| string  | no       | Creator's public username handle (used to build `/u/:username` profile links). |
+| `ratingAvg`     | number  | yes      | Average star rating (1–5); null if none.        |
+| `viewCount`     | integer | no       | Total view count.                               |
+| `createdAt`     | string  | no       | ISO 8601 creation timestamp.                    |
 
 ## Auth
 
