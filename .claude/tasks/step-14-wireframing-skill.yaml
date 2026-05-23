@@ -1,0 +1,6 @@
+id: step-14-wireframing-skill
+subject: '[done] step-14: Create page-wireframing skill and design system research'
+status: done
+description: Design a page-wireframing skill that keeps wireframes consistent for
+  each page. Research and recommend a Vue design system. Created docs/research/design-system-choice.md
+  (recommends Vuetify 3) and .claude/skills/page-wireframing/ skill family (4 skills).

@@ -1,6 +1,0 @@
-{
-  "id": "step-22-23-monorepo",
-  "subject": "#step-22-23: Scaffold bun/ts/nx/mise/direnv monorepo + folder structure",
-  "status": "completed",
-  "description": "Steps 22-23 of the farish prompt. Step 22: monorepo framework (bun workspaces, root strict tsconfig, nx task runner with dependsOn+caching, mise tool manager, direnv .envrc, shared Biome lint+format with custom rules, docs under docs/monorepo/, standard run-scripts per package). Step 23: package-type folder structure (services/ apps/ plugins/ lib/ packages/ infra/ .github/ .mise/) with dummy example packages exercising the nx task graph. Verify nx/mise/direnv locally."
-}
