@@ -1,0 +1,5 @@
+id: step-31-wireframe-match
+subject: '#step-31: Update all 11 pages to match wireframes'
+status: in_progress
+description: 'Step 31 of the farish project: update each of the 11 page view components
+  in apps/web/src/views/ to match their wireframes. Build with Vuetify 3.'

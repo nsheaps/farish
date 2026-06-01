@@ -1,0 +1,26 @@
+{
+  "name": "@farish/sdk",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Dummy publishable package — wraps the farish libs into one SDK surface.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "lint": "biome lint ./src",
+    "format": "biome check --write ./src",
+    "test": "bun test",
+    "build": "tsc -p tsconfig.json",
+    "release": "cd ../.. && .mise/tasks/package-release.sh @farish/sdk"
+  },
+  "dependencies": {
+    "@farish/core": "workspace:*",
+    "@farish/math": "workspace:*"
+  }
+}

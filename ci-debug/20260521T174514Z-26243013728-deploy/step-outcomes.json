@@ -1,0 +1,59 @@
+{
+  "checkout": {
+    "outputs": {
+      "commit": "26bbef2a0698b17f1bf9afb1ef3655cfbcd362ad",
+      "ref": "claude/ai-3d-model-generator-XjoUi"
+    },
+    "outcome": "success",
+    "conclusion": "success"
+  },
+  "mise": {
+    "outputs": {
+      "cache-hit": "true"
+    },
+    "outcome": "success",
+    "conclusion": "success"
+  },
+  "cache-nx": {
+    "outputs": {
+      "cache-hit": "true"
+    },
+    "outcome": "success",
+    "conclusion": "success"
+  },
+  "bootstrap": {
+    "outputs": {},
+    "outcome": "success",
+    "conclusion": "success"
+  },
+  "path": {
+    "outputs": {},
+    "outcome": "success",
+    "conclusion": "success"
+  },
+  "build": {
+    "outputs": {},
+    "outcome": "success",
+    "conclusion": "success"
+  },
+  "assemble": {
+    "outputs": {},
+    "outcome": "success",
+    "conclusion": "success"
+  },
+  "configure": {
+    "outputs": {},
+    "outcome": "failure",
+    "conclusion": "failure"
+  },
+  "upload": {
+    "outputs": {},
+    "outcome": "skipped",
+    "conclusion": "skipped"
+  },
+  "deployment": {
+    "outputs": {},
+    "outcome": "skipped",
+    "conclusion": "skipped"
+  }
+}

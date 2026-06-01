@@ -1,0 +1,22 @@
+# Plugin settings for the farish project.
+# Schema: each top-level key is a plugin name; see that plugin's skill docs.
+
+1pass:
+  enabled: true
+  # Download the 1Password CLI (`op`) when not on PATH. The session provides
+  # OP_SERVICE_ACCOUNT_TOKEN (vault: AI-Jack), so `op` auto-authenticates.
+  autoInstall: true
+  # Inject the GitHub App credentials from 1Password so the github-app plugin
+  # can mint an installation token on SessionStart. Item: github--app--jack.
+  secrets:
+    - envVar: GITHUB_APP_ID
+      reference: "op://AI-Jack/github--app--jack/GITHUB_APP_ID"
+    - envVar: GITHUB_INSTALLATION_ID
+      reference: "op://AI-Jack/github--app--jack/GITHUB_INSTALLATION_ID"
+    - envVar: GITHUB_APP_PRIVATE_KEY
+      reference: "op://AI-Jack/github--app--jack/GITHUB_APP_PRIVATE_KEY"
+
+github-app:
+  enabled: true
+  # Configure git identity to the GitHub App bot user automatically.
+  autoGitConfig: true

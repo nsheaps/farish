@@ -1,0 +1,466 @@
+# pages.yml — screenshot pipeline + GitHub Pages deployment (initial prompt step 28).
+#
+# A SINGLE workflow with two sequential jobs so the screenshot commit-back and
+# the Pages deployment never race over the one Pages deployment a repo gets:
+#
+#   job `screenshots`  build the Vue app → run the Playwright page suite
+#                      (screenshot every route + record videos) → on push to
+#                      main, commit the PNGs back under a date-based path with
+#                      a loop-safe `[skip ci]` message.
+#   job `deploy`       (needs: screenshots) checks out the commit-back ref,
+#                      assembles ./_site (app + rendered docs + screenshot
+#                      runs) via the `pages-site` mise task, and deploys it to
+#                      GitHub Pages with the official actions/deploy-pages.
+#
+# Step 28 requirements satisfied:
+#   - screenshots of every page taken on main ........ job `screenshots`
+#   - committed back, date-based path, `[skip ci]` .... step "Commit screenshots"
+#   - published to GitHub Pages ....................... job `deploy`
+#   - docs/specs/wireframes published to Pages ........ job `deploy` (pages-site)
+#
+# Amendment A5 dry-run: on pull_request events PAGES_DRY_RUN=true. The build +
+# Playwright suite + site assembly all run in full so the workflow is exercised
+# on PR #1; only the two irreversible side-effects — the git commit-back and
+# the Pages deployment — are gated off for dry-runs.
+#
+# Loop safety: the commit-back runs ONLY on push-to-main, and its message
+# contains `[skip ci]` (GitHub natively skips push-triggered runs whose head
+# commit message contains `[skip ci]`/`[no ci]`). The step also no-ops when
+# there is no screenshot diff. Two independent guards => no infinite loop.
+#
+# Off-the-shelf actions only, all pinned (initial prompt step 22). Versions
+# match GitHub's official Pages starter workflow (actions/starter-workflows
+# pages/static.yml) — that combo is the canonical, known-good pairing:
+#   - actions/checkout@v4              — repo checkout
+#   - jdx/mise-action@v2               — installs bun + node from mise.toml
+#   - actions/cache@v4                 — caches .nx/cache
+#   - actions/configure-pages@v5       — configures (+ auto-enables) Pages
+#   - actions/upload-pages-artifact@v3 — packages ./_site as a Pages artifact
+#   - actions/deploy-pages@v5          — official GitHub Pages deployment
+# Playwright browsers are installed with `playwright install --with-deps`
+# (the project pins @playwright/test in bun.lock — no separate setup action).
+
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    # Same activity types as ci.yml / tilt-ci.yml so draft PRs also trigger.
+    types: [opened, synchronize, reopened, ready_for_review]
+
+# A5 dry-run flag: true on pull_request events, false on push to main.
+env:
+  PAGES_DRY_RUN: ${{ github.event_name == 'pull_request' && 'true' || 'false' }}
+
+# Least-privilege token scopes:
+#   contents: write  — the screenshots job commits PNGs back to the repo.
+#   pages: write / id-token: write — required by actions/deploy-pages.
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+# Allow only one Pages deployment at a time; never cancel an in-flight one.
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # ── Job 1: build app, screenshot every page, commit results back ──────────
+  screenshots:
+    name: screenshots
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Dry-run notice
+        if: env.PAGES_DRY_RUN == 'true'
+        run: |
+          echo "::notice::PAGES_DRY_RUN=true — build + Playwright suite + site"
+          echo "assembly run in full; commit-back and Pages deploy are skipped."
+
+      # Install bun + node at the versions pinned in mise.toml.
+      - name: Install toolchain via mise
+        uses: jdx/mise-action@v2
+        with:
+          cache: true
+          experimental: true
+
+      # nx content-addressed task cache — speeds up the web build.
+      - name: Cache nx task results
+        uses: actions/cache@v4
+        with:
+          path: .nx/cache
+          key: nx-cache-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            nx-cache-${{ runner.os }}-
+
+      - name: Bootstrap (bun install)
+        id: bootstrap
+        run: mise run bootstrap
+
+      # node_modules/.bin holds nx (a workspace devDependency). jdx/mise-action
+      # exports PATH before `bun install` creates node_modules, so the raw
+      # `nx run web:e2e` step below cannot find nx unless this directory is
+      # exported to $GITHUB_PATH explicitly (same fix as tilt-ci.yml).
+      - name: Put node_modules/.bin on PATH
+        run: echo "${{ github.workspace }}/node_modules/.bin" >> "$GITHUB_PATH"
+
+      # Cache the Playwright Chromium browser binary.
+      # Key: runner OS + bun.lock hash — ensures a cache miss whenever any dep
+      # changes (which may bump the playwright browser revision).
+      # Note: system deps (libnss3 etc.) are NOT cached — they are installed
+      # via apt by `--with-deps` on every run. The Playwright docs explicitly
+      # advise against caching them because the set of required packages can
+      # change between apt mirrors and runner OS versions.
+      - name: Cache Playwright browser binaries
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-browsers-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+
+      # Playwright needs its browser binaries + OS deps; the npm package alone
+      # is not enough. --with-deps installs the apt packages chromium needs.
+      # Run this step unconditionally — even on a cache hit the system deps
+      # must be installed (they are not cached). `playwright install` skips the
+      # browser download when the binary already exists in the cache; the
+      # --with-deps flag only re-runs the apt install portion.
+      - name: Install Playwright browsers (+ system deps)
+        id: playwright-install
+        run: bun run --cwd apps/web playwright install --with-deps chromium
+
+      # Build the app, then run the screenshot suite against the production
+      # build. `nx run web:e2e` respects the task graph: its `dependsOn: ["^build"]`
+      # ensures workspace lib dist/ artefacts (@farish/api-contract, @farish/mock-data)
+      # are built before `vite build` runs — critical on a cold CI runner where
+      # no dist/ exists yet. The underlying package script is still
+      # `vite build && playwright test`, so local and CI run the same code.
+      - name: Build app + run screenshot suite
+        id: e2e
+        run: nx run web:e2e
+
+      # Copy the raw PNGs onto a date-based path: docs/screenshots/<date>-<run>/.
+      # The script prints the run directory name; capture it for later steps.
+      - name: Stage screenshots on date-based path
+        id: stage
+        run: |
+          run_name="$(bun run scripts/publish-screenshots.ts "${{ github.run_id }}")"
+          echo "run_name=${run_name}" >> "$GITHUB_OUTPUT"
+          echo "Staged screenshot run: ${run_name}"
+
+      # Upload the raw run (screenshots, videos, HTML report) as a workflow
+      # artifact — always, even on dry-runs, so PR authors can inspect output.
+      - name: Upload Playwright artifacts
+        id: upload-artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-run-${{ github.run_id }}
+          path: apps/web/e2e/output
+          if-no-files-found: warn
+
+      # Commit the date-based screenshot directory back to the repo.
+      # Guard 1: push-to-main only — PR dry-runs never commit.
+      # Guard 2: `[skip ci]` in the message — the resulting push is ignored by
+      #          every workflow's push trigger, so this cannot loop.
+      # Guard 3: no-op when `git diff` shows nothing staged.
+      - name: Commit screenshots ([skip ci], loop-safe)
+        if: env.PAGES_DRY_RUN == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/screenshots/
+          if git diff --cached --quiet; then
+            echo "No screenshot changes to commit."
+            exit 0
+          fi
+          git commit -m "chore(screenshots): publish run ${{ steps.stage.outputs.run_name }} [skip ci]"
+          git push origin HEAD:${{ github.ref_name }}
+
+      # ── Failure diagnostics capture ──────────────────────────────────────────
+      # Runs ONLY when the job has already failed (any prior step).
+      # Collects every available diagnostic into ci-debug/<timestamp>-<run_id>/
+      # and commits + pushes to the PR branch with [skip ci] so it can be
+      # `git pull`-ed and read locally.
+      #
+      # Loop-safety analysis:
+      #   • `if: failure()` — this step is skipped on success; a successful run
+      #     never commits anything and never loops.
+      #   • `[skip ci]` in the commit message — GitHub natively skips all
+      #     push-triggered workflow runs whose head-commit message contains
+      #     `[skip ci]`, so the diagnostics push does NOT re-trigger this job.
+      #   • The step also exits early when `git diff --cached --quiet` (nothing
+      #     staged), providing a third independent guard.
+      #   • A diagnostics commit itself cannot fail (it never runs the screenshot
+      #     suite), so a failing diagnostics step cannot re-arm this step.
+      - name: Capture failure diagnostics and commit back [skip ci]
+        if: ${{ failure() }}
+        run: |
+          set +e  # keep going even if individual commands fail
+
+          TS="$(date -u +%Y%m%dT%H%M%SZ)"
+          RUN_ID="${{ github.run_id }}"
+          DEBUG_DIR="ci-debug/${TS}-${RUN_ID}"
+          mkdir -p "${DEBUG_DIR}"
+
+          echo "=== Diagnostics capture: ${DEBUG_DIR} ==="
+
+          # ── 0. Per-step outcomes — which job step actually failed ──────────
+          # GitHub expands ${{ toJSON(steps) }} to a JSON object keyed by each
+          # step id, each with .outcome / .conclusion. This is the definitive
+          # answer to "which step failed".
+          cat > "${DEBUG_DIR}/step-outcomes.json" <<'STEP_OUTCOMES_EOF'
+          ${{ toJSON(steps) }}
+          STEP_OUTCOMES_EOF
+
+          # ── 1. Environment / versions ──────────────────────────────────────
+          {
+            echo "=== uname -a ==="
+            uname -a
+            echo ""
+            echo "=== node --version ==="
+            node --version 2>&1 || echo "(node not found)"
+            echo ""
+            echo "=== bun --version ==="
+            bun --version 2>&1 || echo "(bun not found)"
+            echo ""
+            echo "=== bunx playwright --version ==="
+            bunx playwright --version 2>&1 || echo "(playwright not found)"
+            echo ""
+            echo "=== df -h /dev/shm ==="
+            df -h /dev/shm 2>&1 || echo "(df failed)"
+            echo ""
+            echo "=== df -h / ==="
+            df -h / 2>&1
+            echo ""
+            echo "=== free -h ==="
+            free -h 2>&1 || echo "(free failed)"
+            echo ""
+            echo "=== env (filtered) ==="
+            env | grep -v -i 'token\|secret\|password\|key' | sort
+          } > "${DEBUG_DIR}/environment.txt" 2>&1
+
+          # ── 2. Playwright install output ───────────────────────────────────
+          # Re-run playwright install and capture stdout+stderr verbatim so we
+          # can see whether browser binaries or system deps are missing.
+          bun run --cwd apps/web playwright install --with-deps chromium \
+            > "${DEBUG_DIR}/playwright-install.txt" 2>&1 || true
+
+          # ── 3. Chromium binary / launch probe ─────────────────────────────
+          {
+            echo "=== Chromium binary location ==="
+            find ~/.cache/ms-playwright -name 'chrome' -o -name 'chromium' 2>/dev/null | head -20
+            echo ""
+            echo "=== Chromium executable probe ==="
+            CHROME_BIN="$(find ~/.cache/ms-playwright -name 'chrome' -type f 2>/dev/null | head -1)"
+            if [ -n "${CHROME_BIN}" ]; then
+              echo "Found: ${CHROME_BIN}"
+              "${CHROME_BIN}" --version 2>&1 || echo "(launch failed)"
+              "${CHROME_BIN}" --headless --disable-gpu --no-sandbox \
+                --dump-dom about:blank 2>&1 | head -30 || echo "(headless launch failed)"
+            else
+              echo "No chromium binary found in ~/.cache/ms-playwright"
+            fi
+            echo ""
+            echo "=== ldd chromium (shared lib deps) ==="
+            if [ -n "${CHROME_BIN}" ]; then
+              ldd "${CHROME_BIN}" 2>&1 | grep -i 'not found' || echo "(no missing libs)"
+            fi
+          } > "${DEBUG_DIR}/chromium-probe.txt" 2>&1
+
+          # ── 4. Playwright test results ─────────────────────────────────────
+          if [ -d apps/web/test-results ]; then
+            cp -r apps/web/test-results "${DEBUG_DIR}/test-results" 2>/dev/null || true
+          fi
+          if [ -d apps/web/playwright-report ]; then
+            cp -r apps/web/playwright-report "${DEBUG_DIR}/playwright-report" 2>/dev/null || true
+          fi
+          # Any loose trace/stderr txt files produced by Playwright
+          find apps/web -name '*.txt' -newer apps/web/package.json \
+            -not -path '*/node_modules/*' 2>/dev/null \
+            | head -50 | while read -r f; do
+                cp "$f" "${DEBUG_DIR}/" 2>/dev/null || true
+              done
+
+          # ── 5. Vite build / preview logs ──────────────────────────────────
+          # Replay the build step and capture output.
+          bun run --cwd apps/web build \
+            > "${DEBUG_DIR}/vite-build.txt" 2>&1 || true
+
+          # ── 6. Exact failing command repro ─────────────────────────────────
+          {
+            echo "=== Failing command ==="
+            echo "  bun run --cwd apps/web e2e"
+            echo ""
+            echo "=== Re-running with verbose output ==="
+            bun run --cwd apps/web e2e 2>&1 | tail -200
+          } > "${DEBUG_DIR}/e2e-repro.txt" 2>&1 || true
+
+          # ── 7. Manifest ────────────────────────────────────────────────────
+          {
+            echo "ci-debug collection: ${TS}-${RUN_ID}"
+            echo "github.ref:       ${{ github.ref }}"
+            echo "github.sha:       ${{ github.sha }}"
+            echo "github.run_id:    ${{ github.run_id }}"
+            echo "github.run_number:${{ github.run_number }}"
+            echo "github.actor:     ${{ github.actor }}"
+            echo ""
+            echo "=== Files collected ==="
+            find "${DEBUG_DIR}" -type f | sort
+          } > "${DEBUG_DIR}/MANIFEST.txt" 2>&1
+
+          # ── Commit and push ────────────────────────────────────────────────
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "${DEBUG_DIR}/"
+          if git diff --cached --quiet; then
+            echo "Nothing staged to commit (diagnostics directory is empty)."
+            exit 0
+          fi
+          git commit -m "ci(debug): screenshots failure diagnostics run ${RUN_ID} [skip ci]"
+
+          # Determine the branch to push to: on a pull_request event use
+          # github.head_ref (the PR branch); on a push event use github.ref_name.
+          PUSH_BRANCH="${{ github.head_ref || github.ref_name }}"
+          echo "Pushing diagnostics to branch: ${PUSH_BRANCH}"
+          git push origin HEAD:"${PUSH_BRANCH}"
+
+          echo "Diagnostics committed to ${DEBUG_DIR} on branch ${PUSH_BRANCH}."
+
+  # ── Job 2: assemble ./_site and deploy it to GitHub Pages ─────────────────
+  deploy:
+    name: deploy-pages
+    runs-on: ubuntu-latest
+    # Wait for the screenshot job so the commit-back is already on the branch
+    # and gets included in the published docs site. One job touches Pages.
+    needs: screenshots
+    # Deploy on push to main, OR on this PR branch which serves as the de-facto
+    # main while the direct-push path to main is unreachable.
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'pull_request' &&
+       github.head_ref == 'claude/ai-3d-model-generator-XjoUi')
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      # Check out the branch HEAD. On push events use ref_name (branch name);
+      # on pull_request events use head_ref (the PR source branch) so we get
+      # the actual app code rather than the merge-ref.
+      # Every step carries an `id:` so the failure-diagnostics step below can
+      # name the exact failing step via ${{ toJSON(steps) }} — without ids a
+      # step's outcome does not appear in the `steps` context.
+      - name: Checkout (post-commit-back)
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+          fetch-depth: 0
+
+      - name: Install toolchain via mise
+        id: mise
+        uses: jdx/mise-action@v2
+        with:
+          cache: true
+          experimental: true
+
+      - name: Cache nx task results
+        id: cache-nx
+        uses: actions/cache@v4
+        with:
+          path: .nx/cache
+          key: nx-cache-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            nx-cache-${{ runner.os }}-
+
+      - name: Bootstrap (bun install)
+        id: bootstrap
+        run: mise run bootstrap
+
+      # node_modules/.bin holds nx; export it so the raw `nx run web:build`
+      # step below resolves (jdx/mise-action exports PATH before node_modules
+      # exists). Same fix as tilt-ci.yml and the screenshots job above.
+      - name: Put node_modules/.bin on PATH
+        id: path
+        run: echo "${{ github.workspace }}/node_modules/.bin" >> "$GITHUB_PATH"
+
+      # Build the app — `pages-site` copies apps/web/dist into the site root.
+      - name: Build app
+        id: build
+        run: nx run web:build
+
+      # Assemble ./_site: built app + docs/**.md rendered to HTML (Mermaid,
+      # A6) + every committed screenshot run. The SAME mise task a developer
+      # runs locally (step 24).
+      - name: Assemble Pages site
+        id: assemble
+        run: mise run pages-site
+
+      - name: Configure GitHub Pages
+        id: configure
+        uses: actions/configure-pages@v5
+        with:
+          # Auto-enable GitHub Pages (source = GitHub Actions) on the first
+          # deploy — the repo's Pages setting is likely not turned on yet.
+          enablement: true
+
+      # Package ./_site as the Pages artifact. Pinned to @v3 to match GitHub's
+      # official Pages starter workflow — @v3 is the version paired with
+      # deploy-pages@v5 (the @v4 + deploy-pages@v4 combo previously used here
+      # is not the canonical pairing and was failing the deploy job).
+      - name: Upload Pages artifact
+        id: upload
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      # Official GitHub Pages deployment. @v5 matches the starter workflow.
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
+
+      # Failure diagnostics for the deploy job — commits step outcomes + info
+      # to ci-debug/ so a deploy failure is readable without GitHub API access.
+      - name: Capture deploy failure diagnostics [skip ci]
+        if: ${{ failure() }}
+        run: |
+          set +e
+          TS="$(date -u +%Y%m%dT%H%M%SZ)"
+          DEBUG_DIR="ci-debug/${TS}-${{ github.run_id }}-deploy"
+          mkdir -p "${DEBUG_DIR}"
+          cat > "${DEBUG_DIR}/step-outcomes.json" <<'STEP_OUTCOMES_EOF'
+          ${{ toJSON(steps) }}
+          STEP_OUTCOMES_EOF
+          {
+            echo "job: deploy-pages"
+            echo "run_id:  ${{ github.run_id }}"
+            echo "sha:     ${{ github.sha }}"
+            echo "event:   ${{ github.event_name }}"
+            echo "ref:     ${{ github.ref }}"
+            echo "head_ref:${{ github.head_ref }}"
+            echo "=== _site listing ==="
+            ls -laR _site 2>&1 | head -60
+          } > "${DEBUG_DIR}/deploy-info.txt" 2>&1
+          # Probe the Pages API: is Pages enabled, and how is it sourced?
+          #   HTTP 404 => Pages not enabled (configure-pages enablement failed)
+          #   HTTP 200 + build_type=workflow => OK (Actions-sourced)
+          #   HTTP 200 + build_type=legacy   => branch-sourced (conflicts)
+          #   HTTP 403 => token/plan cannot manage Pages
+          curl -sS -o "${DEBUG_DIR}/pages-api.json" \
+            -w 'HTTP %{http_code}\n' \
+            -H "Authorization: Bearer ${{ github.token }}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${{ github.repository }}/pages" \
+            > "${DEBUG_DIR}/pages-api-status.txt" 2>&1
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "${DEBUG_DIR}/"
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "ci(debug): deploy failure diagnostics run ${{ github.run_id }} [skip ci]"
+          git push origin HEAD:"${{ github.head_ref || github.ref_name }}"

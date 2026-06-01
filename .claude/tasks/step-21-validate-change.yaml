@@ -1,0 +1,6 @@
+id: step-21-validate-change
+subject: '#step-21: Create validate-change drilldown skill family'
+status: in_progress
+description: 'Create .claude/skills/validate-change/SKILL.md drilldown + subskills:
+  validate-change-code, validate-change-infra, validate-change-ci, validate-change-docs,
+  validate-change-skill, validate-change-spec.'

@@ -1,0 +1,13 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "math",
+  "projectType": "library",
+  "sourceRoot": "lib/math/src",
+  "tags": ["scope:lib"],
+  "targets": {
+    "lint": { "executor": "nx:run-script", "options": { "script": "lint" } },
+    "format": { "executor": "nx:run-script", "options": { "script": "format" } },
+    "test": { "executor": "nx:run-script", "options": { "script": "test" } },
+    "build": { "executor": "nx:run-script", "options": { "script": "build" } }
+  }
+}

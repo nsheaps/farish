@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "//": "Root solution tsconfig — references every tsc-built package so editors and `tsc --build` see the whole graph. `apps/web` is intentionally absent: it is a Vue app built by Vite (vite build / vue-tsc), not part of the tsc solution. Docs: docs/monorepo/bun.md",
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "files": [],
+  "references": [
+    { "path": "./lib/core" },
+    { "path": "./lib/math" },
+    { "path": "./lib/api-contract" },
+    { "path": "./lib/mock-data" },
+    { "path": "./packages/sdk" },
+    { "path": "./apps/cli" },
+    { "path": "./services/api" },
+    { "path": "./services/echo-service" }
+  ]
+}

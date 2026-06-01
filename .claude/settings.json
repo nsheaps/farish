@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "defaultMode": "bypassPermissions"
+  },
+  "env": {
+    "TASK_UTILS_TASK_DIR": "/home/user/farish/.claude/tasks",
+    "CLAUDE_CODE_ENABLE_TASKS": "1",
+    "CLAUDE_CODE_ENABLE_BACKGROUND_PLUGIN_REFRESH": "1",
+    "CLAUDE_AUTO_BACKGROUND_TASKS": "1",
+    "CLAUDE_CODE_DISABLE_CRON": "0",
+    "CLAUDE_CODE_DISABLE_BACKGROUND_TASKS": "0",
+    "CLAUDE_CODE_EXIT_AFTER_STOP_DELAY": "60000",
+    "FORCE_AUTOUPDATE_PLUGINS": "1"
+  },
+  "extraKnownMarketplaces": {
+    "agents": {
+      "source": {
+        "source": "github",
+        "repo": "nsheaps/agents"
+      }
+    },
+    "ai-mktpl": {
+      "source": {
+        "source": "github",
+        "repo": "nsheaps/ai-mktpl"
+      }
+    },
+    "agents-local": {
+      "source": {
+        "source": "directory",
+        "path": "/home/user/agents"
+      }
+    },
+    "ai-mktpl-local": {
+      "source": {
+        "source": "directory",
+        "path": "/home/user/ai-mktpl"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "cron-utils@agents-local": true,
+    "task-utils@agents-local": true,
+    "shared-lib@ai-mktpl-local": true,
+    "dangerous-bypass@ai-mktpl-local": true,
+    "agentic-behavior@ai-mktpl-local": true,
+    "common-sense@ai-mktpl-local": true,
+    "deep-research@ai-mktpl-local": true,
+    "edit-utils@ai-mktpl-local": true,
+    "github@ai-mktpl-local": true,
+    "github-app@ai-mktpl-local": true,
+    "1pass@ai-mktpl-local": true,
+    "mise@ai-mktpl-local": true,
+    "scm-utils@ai-mktpl-local": true,
+    "sequential-thinking@ai-mktpl-local": true,
+    "hookify@claude-plugins-official": true,
+    "plugin-dev@claude-plugins-official": true
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
